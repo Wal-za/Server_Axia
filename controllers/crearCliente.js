@@ -26,15 +26,15 @@ const crearCliente = async (req, res) => {
       correoElectronico,
       declaranteRenta,
       estadoCivil,
-      cuentaPrincipal,
+      
       eps,
       prepaga,
       arl,
       fondoCesantias,
       saldoFondoCesantias,
       afp,
-      saldoAfp,
-      cotizoIss
+      saldoAfp
+  
     } = req.body; // Obtén los datos del cuerpo de la solicitud
 
     // Crear una nueva instancia de ClienteAxia
@@ -61,7 +61,6 @@ const crearCliente = async (req, res) => {
       correoElectronico,
       declaranteRenta,
       estadoCivil,
-      cuentaPrincipal,
       eps,
       prepaga,
       arl,
@@ -69,15 +68,19 @@ const crearCliente = async (req, res) => {
       saldoFondoCesantias,
       afp,
       saldoAfp,
-      cotizoIss
-    });
+   
+    })
 
+
+    await nuevoCliente.save(); 
     // Guardar el cliente en la base de datos
-    await nuevoCliente.save();
+ 
 
     // Enviar una respuesta exitosa
     res.status(201).json({ message: 'Cliente creado con éxito', cliente: nuevoCliente });
   } catch (error) {
+    
+    console.log(error)
     // En caso de error, enviar una respuesta con el error
     res.status(500).json({ message: 'Error al crear el cliente', error: error.message });
   }

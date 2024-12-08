@@ -9,21 +9,20 @@ const ClienteAxiaSchema = new Schema({
   fechaNacimiento: { type: Date, required: true }, // Fecha de Nacimiento
   lugarNacimiento: { type: String, required: true }, // Lugar de Nacimiento
   edad: { type: Number, required: true }, // Edad
-  direccionCasa: { type: String, required: true }, // Dirección Casa
+  direccionCasa: { type: String }, // Dirección Casa
   direccionOficina: { type: String }, // Dirección Oficina
   celular: { type: String, required: true }, // Celular
   telefonoCasa: { type: String }, // Teléfono Casa
   telefonoOficina: { type: String }, // Teléfono Oficina
-  empresa: { type: String, required: true }, // Empresa
-  cargo: { type: String, required: true }, // Cargo
-  fechaIngresoCompania: { type: Date, required: true }, // Fecha de Ingreso Compañía
-  tipoContratacion: { type: String, required: true }, // Tipo de contratación
-  profesion: { type: String, required: true }, // Profesión
-  universidad: { type: String, required: true }, // Universidad
+  empresa: { type: String }, // Empresa
+  cargo: { type: String }, // Cargo
+  fechaIngresoCompania: { type: Date }, // Fecha de Ingreso Compañía
+  tipoContratacion: { type: String}, // Tipo de contratación
+  profesion: { type: String }, // Profesión
+  universidad: { type: String}, // Universidad
   correoElectronico: { type: String, required: true }, // Correo Electronico
-  declaranteRenta: { type: Boolean, required: true }, // Declarante de Renta
-  estadoCivil: { type: String, required: true }, // Estado Civil
-  cuentaPrincipal: { type: String }, // # Cuenta Principal
+  declaranteRenta: { type: Boolean }, // Declarante de Renta
+  estadoCivil: { type: String }, // Estado Civil
   eps: { type: String }, // EPS
   prepaga: { type: String }, // PREPAGADA
   arl: { type: String }, // ARL
@@ -31,7 +30,7 @@ const ClienteAxiaSchema = new Schema({
   saldoFondoCesantias: { type: Number }, // SALDO FONDO DE CESANTIAS
   afp: { type: String }, // AFP
   saldoAfp: { type: Number }, // SALDO AFP
-  cotizoIss: { type: Boolean } // Cotizó al ISS?
+  
 });
 
 // Configuración de `toJSON` para ocultar campos sensibles
