@@ -1,11 +1,11 @@
 const { Schema, model } = require('mongoose');
 
 const ClienteAxiaSchema = new Schema({
-  fecha: { type: Date, required: true }, // Fecha (dd/mm/aaaa)
+  fecha: { type: Date, default: Date.now}, // Fecha (dd/mm/aaaa)
   sexo: { type: String, required: true }, // Sexo
   nombre: { type: String, required: true }, // Nombre
   apellidos: { type: String, required: true }, // Apellidos
-  cedula: { type: String, required: true }, // Cédula de Ciudadanía
+  cedula: { type: String, required: true,unique: true}, // Cédula de Ciudadanía
   fechaNacimiento: { type: Date, required: true }, // Fecha de Nacimiento
   lugarNacimiento: { type: String, required: true }, // Lugar de Nacimiento
   edad: { type: Number, required: true }, // Edad
@@ -20,7 +20,7 @@ const ClienteAxiaSchema = new Schema({
   tipoContratacion: { type: String}, // Tipo de contratación
   profesion: { type: String }, // Profesión
   universidad: { type: String}, // Universidad
-  correoElectronico: { type: String, required: true }, // Correo Electronico
+  correoElectronico: { type: String, required: true,unique: true }, // Correo Electronico
   declaranteRenta: { type: Boolean }, // Declarante de Renta
   estadoCivil: { type: String }, // Estado Civil
   eps: { type: String }, // EPS
