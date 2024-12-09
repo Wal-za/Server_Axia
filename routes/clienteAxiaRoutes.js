@@ -4,6 +4,7 @@ const router = express.Router();
 const crearCliente = require('../controllers/crearCliente');
 const obtenerCliente = require('../controllers/obtenerCliente');
 const login = require('../controllers/login'); // Importar el controlador de login
+const  actualizarCliente  = require('../controllers/actualizarcliente');
 
 // Ruta para crear un nuevo cliente
 router.post('/clientes', crearCliente);
@@ -13,5 +14,7 @@ router.get('/clientes/:id', obtenerCliente);
 
 // Ruta para login
 router.post('/login', login); // Agregar la ruta de login
+
+router.put('/actualizar', actualizarCliente);
 
 module.exports = router;
