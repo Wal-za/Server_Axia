@@ -1,10 +1,10 @@
-const ClienteAxia = require('../models/ClienteAxia'); // Asegúrate de poner la ruta correcta
+const ClienteFormulario = require('../models/ClienteAxia'); // Asegúrate de poner la ruta correcta
 
 // Controlador para crear un nuevo cliente
 const crearCliente = async (req, res) => {
   try {
     const {
-      fecha,
+      fecha, // Esto debería ser generado automáticamente como la fecha de creación
       sexo,
       nombre,
       apellidos,
@@ -19,38 +19,40 @@ const crearCliente = async (req, res) => {
       telefonoOficina,
       empresa,
       cargo,
-      fechaIngresoCompania,
+      fechaIngreso,
       tipoContratacion,
       profesion,
       universidad,
       correoElectronico,
       declaranteRenta,
       estadoCivil,
-      eps,
-      prepaga,
-      arl,
-      fondoCesantias,
-      saldoFondoCesantias,
-      afp,
-      saldoAfp
+      contraseña
     } = req.body; // Obtén los datos del cuerpo de la solicitud
 
     // Verificar si ya existe un cliente con la misma cédula
-    const clienteExistente = await ClienteAxia.findOne({ cedula });
-
+    const clienteExistente = await ClienteFormulario.findOne({ cedula });
     if (clienteExistente) {
-      // Si la cédula ya existe en la base de datos, enviar un mensaje de error
       return res.status(400).json({ message: 'El usuario con esta cédula ya está registrado' });
     }
 
-    // Crear una nueva instancia de ClienteAxia
-    const nuevoCliente = new ClienteAxia({
-      fecha,
+    // Verificar si ya existe un cliente con el mismo correo electrónico
+    const correoExistente = await ClienteFormulario.findOne({ correoElectronico });
+    if (correoExistente) {
+      return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
+    }
+
+    // Asegurarse de que las fechas sean objetos Date, si vienen como cadena
+    const fechaNacimientoDate = new Date(fechaNacimiento);
+    const fechaIngresoDate = new Date(fechaIngreso);
+
+    // Crear una nueva instancia de ClienteFormulario
+    const nuevoCliente = new ClienteFormulario({
+      fecha: fecha || new Date(), // Si no se proporciona una fecha, usa la fecha actual
       sexo,
       nombre,
       apellidos,
       cedula,
-      fechaNacimiento,
+      fechaNacimiento: fechaNacimientoDate,
       lugarNacimiento,
       edad,
       direccionCasa,
@@ -60,29 +62,23 @@ const crearCliente = async (req, res) => {
       telefonoOficina,
       empresa,
       cargo,
-      fechaIngresoCompania,
+      fechaIngreso: fechaIngresoDate,
       tipoContratacion,
       profesion,
       universidad,
       correoElectronico,
       declaranteRenta,
       estadoCivil,
-      eps,
-      prepaga,
-      arl,
-      fondoCesantias,
-      saldoFondoCesantias,
-      afp,
-      saldoAfp,
+      contraseña
     });
 
-    await nuevoCliente.save(); // Guardar el cliente en la base de datos
+    // Guardar el cliente en la base de datos
+    await nuevoCliente.save();
 
     // Enviar una respuesta exitosa
     res.status(201).json({ message: 'Cliente creado con éxito', cliente: nuevoCliente });
   } catch (error) {
     console.log(error);
-    // En caso de error, enviar una respuesta con el error
     res.status(500).json({ message: 'Error al crear el cliente', error: error.message });
   }
 };
