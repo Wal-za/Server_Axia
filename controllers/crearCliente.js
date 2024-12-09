@@ -1,4 +1,5 @@
 const ClienteFormulario = require('../models/ClienteAxia'); // Asegúrate de poner la ruta correcta
+const bcrypt = require('bcryptjs'); // Importamos bcrypt para encriptar la contraseña
 
 // Controlador para crear un nuevo cliente
 const crearCliente = async (req, res) => {
@@ -26,7 +27,7 @@ const crearCliente = async (req, res) => {
       correoElectronico,
       declaranteRenta,
       estadoCivil,
-      contraseña
+      contraseña // Recibimos la contraseña en el cuerpo de la solicitud
     } = req.body; // Obtén los datos del cuerpo de la solicitud
 
     // Verificar si ya existe un cliente con la misma cédula
@@ -45,7 +46,10 @@ const crearCliente = async (req, res) => {
     const fechaNacimientoDate = new Date(fechaNacimiento);
     const fechaIngresoDate = new Date(fechaIngreso);
 
-    // Crear una nueva instancia de ClienteFormulario
+    // Encriptar la contraseña antes de guardarla
+    const contraseñaEncriptada = await bcrypt.hash(contraseña, 10);
+
+    // Crear una nueva instancia de ClienteFormulario con la contraseña encriptada
     const nuevoCliente = new ClienteFormulario({
       fecha: fecha || new Date(), // Si no se proporciona una fecha, usa la fecha actual
       sexo,
@@ -69,7 +73,7 @@ const crearCliente = async (req, res) => {
       correoElectronico,
       declaranteRenta,
       estadoCivil,
-      contraseña
+      contraseña: contraseñaEncriptada // Guardar la contraseña encriptada
     });
 
     // Guardar el cliente en la base de datos
