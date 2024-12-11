@@ -1,12 +1,13 @@
 const { Schema, model } = require('mongoose');
 
-// Definir el esquema para el formulario del cliente (ClienteAxias)
+// Esquema para ClienteAxias
 const ClienteAxiasSchema = new Schema({
-  fecha: { type: Date, default: Date.now },
+  // Datos generales
+  fecha: { type: Date, default: Date.now, required: true },
   sexo: { type: String, required: true },
   nombre: { type: String, required: true },
   apellidos: { type: String, required: true },
-  cedula: { type: String, required: true, unique: true },
+  cedula: { type: String, required: true, unique: true },  // Cedula obligatoria
   fechaNacimiento: { type: Date, required: true },
   lugarNacimiento: { type: String, required: true },
   edad: { type: Number, required: true },
@@ -24,7 +25,73 @@ const ClienteAxiasSchema = new Schema({
   correoElectronico: { type: String, required: true, unique: true },
   declaranteRenta: { type: String, required: true },
   estadoCivil: { type: String, required: true },
-  contraseña: { type: String, required: true }
+  contraseña: { type: String, required: true },
+
+  // Secciones financieras (Mixed para estructuras dinámicas)
+  seguridadsocial: { type: Schema.Types.Mixed, required: false },
+  ingresos: { type: Schema.Types.Mixed, required: false },
+  Ahorro: { type: Schema.Types.Mixed, required: false },
+  Transporte: { type: Schema.Types.Mixed, required: false },
+  gastosPersonales: { type: Schema.Types.Mixed, required: false },
+  hogar: { type: Schema.Types.Mixed, required: false },
+  entretenimiento: { type: Schema.Types.Mixed, required: false },
+  protecciones: { type: Schema.Types.Mixed, required: false },
+  descuentosnomina: { type: Schema.Types.Mixed, required: false },
+  educacion: { type: Schema.Types.Mixed, required: false },
+  financieros: { type: Schema.Types.Mixed, required: false },
+  otros: { type: Schema.Types.Mixed, required: false },
+  seguros: { type: Schema.Types.Mixed, required: false },
+  AnualidadesFijas: { type: Schema.Types.Mixed, required: false },
+  AnualidadesPresupuestadas: { type: Schema.Types.Mixed, required: false },
+  Impuestos: { type: Schema.Types.Mixed, required: false },
+  activoLiquidos: { type: Schema.Types.Mixed, required: false },
+  activosProductivos: { type: Schema.Types.Mixed, required: false },
+  activosImproductivos: { type: Schema.Types.Mixed, required: false },
+
+  // Subdocumentos de objetivos y deudas
+  DeudasCortoPlazo: { 
+    type: [Map], 
+    of: Schema.Types.Mixed, 
+    required: false 
+  },
+  DeudasLargoPlazo: { 
+    type: [Map], 
+    of: Schema.Types.Mixed, 
+    required: false 
+  },
+  objetivos: { 
+    type: [Map], 
+    of: Schema.Types.Mixed, 
+    required: false 
+  },
+
+  // Datos adicionales
+  datosMongo: {
+    cedula: { type: String, required: false }  // Solo para comparación, no obligatorio
+  }
+});
+
+// Middleware para no modificar campos existentes
+ClienteAxiasSchema.pre('updateOne', function (next) {
+  const update = this.getUpdate();
+  
+  // Campos que no deben ser modificados si ya existen
+  const fieldsToKeep = [
+    "seguridadsocial", "ingresos", "Ahorro", "Transporte", "gastosPersonales", "hogar", 
+    "entretenimiento", "protecciones", "descuentosnomina", "educacion", "financieros", 
+    "otros", "seguros", "AnualidadesFijas", "AnualidadesPresupuestadas", "Impuestos", 
+    "activoLiquidos", "activosProductivos", "activosImproductivos", "objetivos", 
+    "DeudasCortoPlazo", "DeudasLargoPlazo"
+  ];
+
+  // Solo actualizar los campos que están en el JSON (evitar que los otros campos se modifiquen)
+  for (let field in update) {
+    if (fieldsToKeep.includes(field)) {
+      update[field] = { $setOnInsert: update[field] }; // No actualizar si ya existe
+    }
+  }
+  
+  next();
 });
 
 // Configuración para transformar los datos antes de enviarlos como respuesta (JSON)
@@ -34,17 +101,6 @@ ClienteAxiasSchema.set('toJSON', {
     delete returnedObject._id;
     delete returnedObject.__v;
   }
-});
-
-// Convertir la fechaNacimiento y fechaIngreso de string a Date al guardar
-ClienteAxiasSchema.pre('save', function (next) {
-  if (typeof this.fechaNacimiento === 'string') {
-    this.fechaNacimiento = new Date(this.fechaNacimiento);  // Convertir cadena a Date
-  }
-  if (typeof this.fechaIngreso === 'string') {
-    this.fechaIngreso = new Date(this.fechaIngreso);  // Convertir cadena a Date
-  }
-  next();
 });
 
 // Crear y exportar el modelo basado en el esquema
