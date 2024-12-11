@@ -32,11 +32,11 @@ const actualizarCliente = async (req, res) => {
           cliente[key] = objetivos.map((obj, index) => {
             return {
               [`objetivo-${index}`]: {
-                Objetivo: obj.Objetivo || "",
-                Descripción: obj.Descripción || "",
-                'Plazo (Años)': obj['Plazo (Años)'] || 0,
-                'Valor del objetivo': obj['Valor del objetivo'] || 0,
-                Comentarios: obj.Comentarios || ""
+                objetivo: obj.objetivo || "",
+                descripcion: obj.descripcion || "",
+                plazo: obj.plazo || 0,
+                vrObjetivo: obj.vrObjetivo || 0,
+                comentarios: obj.comentarios || ""
               }
             };
           });
@@ -48,12 +48,12 @@ const actualizarCliente = async (req, res) => {
           cliente[key] = DeudasCortoPlazo.map((deuda, index) => {
             return {
               [`pasivo-${index}`]: {
-                Pasivo: deuda.Pasivo || "",
-                'Saldo de Capital': deuda['Saldo de Capital'] || "",
-                Entidad: deuda.Entidad || "",
-                'Tasa (%)': deuda['Tasa (%)'] || "",
-                '# Cuotas Pendientes': deuda['# Cuotas Pendientes'] || "",
-                'Cuota Mensual': deuda['Cuota Mensual'] || ""
+                pasivo: deuda.pasivo || "",
+                saldoCapital: deuda.saldoCapital || "",
+                entidad: deuda.entidad || "",
+                tasa: deuda.tasa || "",
+                cuotasPendientes: deuda.cuotasPendientes || "",
+                cuotaMensual: deuda.cuotaMensual || ""
               }
             };
           });
@@ -67,12 +67,12 @@ const actualizarCliente = async (req, res) => {
             return {
               
               [`pasivo-${index}`]: {
-                Pasivo: deuda.Pasivo || "",
-                'Saldo de Capital': deuda['Saldo de Capital'] || "",
-                Entidad: deuda.Entidad || "",
-                'Tasa (%)': deuda['Tasa (%)'] || "",
-                '# Cuotas Pendientes': deuda['# Cuotas Pendientes'] || "",
-                'Cuota Mensual': deuda['Cuota Mensual'] || ""
+                pasivo: deuda.pasivo || "",
+                saldoCapital: deuda.saldoCapital || "",
+                entidad: deuda.entidad || "",
+                tasa: deuda.tasa || "",
+                cuotasPendientes: deuda.cuotasPendientes || "",
+                cuotaMensual: deuda.cuotaMensual || ""
               }
             };
           });
