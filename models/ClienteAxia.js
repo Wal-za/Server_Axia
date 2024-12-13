@@ -12,10 +12,10 @@ const ClienteAxiasSchema = new Schema({
   lugarNacimiento: { type: String, required: true },
   edad: { type: Number, required: true },
   direccionCasa: { type: String, required: true },
-  direccionOficina: { type: String, required: true },
+  direccionOficina: { type: String, required: false },
   celular: { type: String, required: true },
-  telefonoCasa: { type: String, required: true },
-  telefonoOficina: { type: String, required: true },
+  telefonoCasa: { type: String, required: false },
+  telefonoOficina: { type: String, required: false },
   empresa: { type: String, required: true },
   cargo: { type: String, required: true },
   fechaIngreso: { type: Date, required: true },
@@ -47,6 +47,8 @@ const ClienteAxiasSchema = new Schema({
   activoLiquidos: { type: Schema.Types.Mixed, required: false },
   activosProductivos: { type: Schema.Types.Mixed, required: false },
   activosImproductivos: { type: Schema.Types.Mixed, required: false },
+  fieldset: { type: Schema.Types.Mixed, required: false, default: 0 },
+  
 
   // Subdocumentos de objetivos y deudas
   DeudasCortoPlazo: { 

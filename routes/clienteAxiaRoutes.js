@@ -5,6 +5,7 @@ const crearCliente = require('../controllers/crearCliente');
 const obtenerCliente = require('../controllers/obtenerCliente');
 const login = require('../controllers/login'); // Importar el controlador de login
 const  actualizarCliente  = require('../controllers/actualizarcliente');
+const  obtenerFieldset  = require('../controllers/fieldset');
 
 // Ruta para crear un nuevo cliente
 router.post('/clientes', crearCliente);
@@ -16,5 +17,8 @@ router.get('/clientes/:id', obtenerCliente);
 router.post('/login', login); // Agregar la ruta de login
 
 router.put('/actualizar', actualizarCliente);
+
+// Definir la ruta para obtener el fieldset de un cliente por su cédula
+router.get('/cliente/:cedula/fieldset', obtenerFieldset);
 
 module.exports = router;

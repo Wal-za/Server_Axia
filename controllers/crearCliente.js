@@ -79,8 +79,8 @@ const crearCliente = async (req, res) => {
     // Guardar el cliente en la base de datos
     await nuevoCliente.save();
 
-    // Enviar una respuesta exitosa
-    res.status(201).json({ message: 'Cliente creado con éxito', cliente: nuevoCliente });
+    // Enviar una respuesta exitosa, pero solo con la cédula
+    res.status(201).json({ message: 'Cliente creado con éxito', cedula: nuevoCliente.cedula });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Error al crear el cliente', error: error.message });
