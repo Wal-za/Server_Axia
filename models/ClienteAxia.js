@@ -7,7 +7,7 @@ const ClienteAxiasSchema = new Schema({
   sexo: { type: String, required: true },
   nombre: { type: String, required: true },
   apellidos: { type: String, required: true },
-  cedula: { type: String, required: true, unique: true },  // Cedula obligatoria
+  cedula: { type: String, required: true, unique: true },  
   fechaNacimiento: { type: Date, required: true },
   lugarNacimiento: { type: String, required: true },
   edad: { type: Number, required: true },
@@ -18,7 +18,7 @@ const ClienteAxiasSchema = new Schema({
   telefonoOficina: { type: String, required: false },
   empresa: { type: String, required: true },
   cargo: { type: String, required: true },
-  fechaIngreso: { type: Date, required: true },
+  fechaIngreso: { type: Date, required: false },
   tipoContratacion: { type: String, required: true },
   profesion: { type: String, required: true },
   universidad: { type: String, required: true },
