@@ -1,31 +1,27 @@
 const ExcelJS = require('exceljs');
-const ClienteAxia = require('../models/ClienteAxia'); // Asegúrate de poner la ruta correcta
+const ClienteAxia = require('../models/ClienteAxia'); 
 
-// Controlador para obtener los datos de un cliente por su 'cedula' y devolverlos en formato JSON
+
 const obtenerClientePorCedulaEnJSON = async (req, res) => {
-    try {
-        // Obtener la 'cedula' del cliente desde los parámetros de la URL
+    try {     
         const {
             cedula
         } = req.params;
-
-        // Buscar el cliente por su 'cedula' en la base de datos
+        console.log(cedula)
+      
         const cliente = await ClienteAxia.findOne({
             cedula
         });
 
-        // Si no se encuentra el cliente, enviar una respuesta de error
         if (!cliente) {
             return res.status(404).json({
                 message: 'Cliente no encontrado con esa cédula'
             });
         }
 
-        // Generar el archivo Excel
-        await generarExcel(cliente, res); // Solo enviamos el archivo, no el JSON
-
+        await generarExcel(cliente, res);
     } catch (error) {
-        // En caso de error, enviar una respuesta con el error
+       
         res.status(500).json({
             message: 'Error al obtener el cliente',
             error: error.message
@@ -348,7 +344,7 @@ const generarExcel = async (cliente, res) => {
 
     // Establecer los encabezados para la descarga
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename=cliente_${cliente.cedula}.xlsx`);
+    res.setHeader('Content-Disposition', `attachment; filename=Cliente_Axia.xlsx`);
 
     // Escribir el archivo Excel a la respuesta
     await workbook.xlsx.write(res);
