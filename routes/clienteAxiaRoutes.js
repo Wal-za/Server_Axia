@@ -11,7 +11,7 @@ const  obtenerFieldset  = require('../controllers/fieldset');
 router.post('/clientes', crearCliente);
 
 // Ruta para obtener los datos de un cliente por su ID
-router.get('/clientes/:id', obtenerCliente);
+router.get('/clientes/:cedula', obtenerCliente);
 
 // Ruta para login
 router.post('/login', login); // Agregar la ruta de login
