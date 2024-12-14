@@ -16,60 +16,57 @@ const obtenerClientePorCedulaEnJSON = async (req, res) => {
     }
 
     // Generar el archivo Excel
-    //await generarExcel(cliente);
-    await generarExcel(cliente, res);
+    await generarExcel(cliente, res);  // Solo enviamos el archivo, no el JSON
 
-    // Devolver los datos del cliente como JSON
-    return res.json(cliente);
   } catch (error) {
     // En caso de error, enviar una respuesta con el error
     res.status(500).json({ message: 'Error al obtener el cliente', error: error.message });
   }
 };
 
+
 // Función para generar el archivo Excel
 
-//const generarExcel = async (cliente, res) => {
-  const generarExcel = async (cliente, res) => {
+
+const generarExcel = async (cliente, res) => {
   const workbook = new ExcelJS.Workbook();
 
-  // Función auxiliar para agregar filas si el campo es un array
+  // Función auxiliar para agregar filas si el campo es un array o valor
   const addArrayRows = (worksheet, sheetName, fieldName, array) => {
     if (array && Array.isArray(array)) {
-      array.forEach((item, index) => {
-        worksheet.addRow([sheetName, fieldName, item]);
+      array.forEach(item => {
+        worksheet.addRow([sheetName, fieldName, item || 'No disponible']);
       });
     } else {
-      worksheet.addRow([sheetName, fieldName, 'No disponible']);
+      worksheet.addRow([sheetName, fieldName, array || 'No disponible']);
     }
   };
 
- // Crear la hoja "Datos Básicos"
-const hojaDatosBasicos = workbook.addWorksheet('Datos Básicos');
-hojaDatosBasicos.addRow(['Campo Principal', 'Subcampo', 'Valor']);
-hojaDatosBasicos.addRow(['nombre', cliente.nombre]);
-hojaDatosBasicos.addRow(['apellidos', cliente.apellidos]);
-hojaDatosBasicos.addRow(['cedula', cliente.cedula]);
-hojaDatosBasicos.addRow(['fechaNacimiento', cliente.fechaNacimiento]);
-hojaDatosBasicos.addRow(['edad', cliente.edad]);
-hojaDatosBasicos.addRow(['lugarNacimiento', cliente.lugarNacimiento]);
-hojaDatosBasicos.addRow(['direccionCasa', cliente.direccionCasa]);
-hojaDatosBasicos.addRow(['direccionOficina', cliente.direccionOficina]);
-hojaDatosBasicos.addRow(['celular', cliente.celular]);
-hojaDatosBasicos.addRow(['telefonoCasa', cliente.telefonoCasa]);
-hojaDatosBasicos.addRow(['telefonoOficina', cliente.telefonoOficina]);
-hojaDatosBasicos.addRow(['empresa', cliente.empresa]);
-hojaDatosBasicos.addRow(['cargo', cliente.cargo]);
-hojaDatosBasicos.addRow(['fechaIngreso', cliente.fechaIngreso]);
-hojaDatosBasicos.addRow(['tipoContratacion', cliente.tipoContratacion]);
-hojaDatosBasicos.addRow(['profesion', cliente.profesion]);
-hojaDatosBasicos.addRow(['universidad', cliente.universidad]);
-hojaDatosBasicos.addRow(['correoElectronico', cliente.correoElectronico]);
-hojaDatosBasicos.addRow(['declaranteRenta', cliente.declaranteRenta]);
-hojaDatosBasicos.addRow(['estadoCivil', cliente.estadoCivil]);
-hojaDatosBasicos.addRow(['contraseña', cliente.contraseña]);
-hojaDatosBasicos.addRow(['fieldset', cliente.fieldset]);
-
+  // Crear la hoja "Datos Básicos"
+  const hojaDatosBasicos = workbook.addWorksheet('Datos Básicos');
+  hojaDatosBasicos.addRow(['Campo Principal', 'Subcampo', 'Valor']);
+  hojaDatosBasicos.addRow(['nombre', cliente.nombre]);
+  hojaDatosBasicos.addRow(['apellidos', cliente.apellidos]);
+  hojaDatosBasicos.addRow(['cedula', cliente.cedula]);
+  hojaDatosBasicos.addRow(['fechaNacimiento', cliente.fechaNacimiento]);
+  hojaDatosBasicos.addRow(['edad', cliente.edad]);
+  hojaDatosBasicos.addRow(['lugarNacimiento', cliente.lugarNacimiento]);
+  hojaDatosBasicos.addRow(['direccionCasa', cliente.direccionCasa]);
+  hojaDatosBasicos.addRow(['direccionOficina', cliente.direccionOficina]);
+  hojaDatosBasicos.addRow(['celular', cliente.celular]);
+  hojaDatosBasicos.addRow(['telefonoCasa', cliente.telefonoCasa]);
+  hojaDatosBasicos.addRow(['telefonoOficina', cliente.telefonoOficina]);
+  hojaDatosBasicos.addRow(['empresa', cliente.empresa]);
+  hojaDatosBasicos.addRow(['cargo', cliente.cargo]);
+  hojaDatosBasicos.addRow(['fechaIngreso', cliente.fechaIngreso]);
+  hojaDatosBasicos.addRow(['tipoContratacion', cliente.tipoContratacion]);
+  hojaDatosBasicos.addRow(['profesion', cliente.profesion]);
+  hojaDatosBasicos.addRow(['universidad', cliente.universidad]);
+  hojaDatosBasicos.addRow(['correoElectronico', cliente.correoElectronico]);
+  hojaDatosBasicos.addRow(['declaranteRenta', cliente.declaranteRenta]);
+  hojaDatosBasicos.addRow(['estadoCivil', cliente.estadoCivil]);
+  hojaDatosBasicos.addRow(['contraseña', cliente.contraseña]);
+  hojaDatosBasicos.addRow(['fieldset', cliente.fieldset]);
 
   // Crear la hoja "Seguridad Social"  
   const hojaSeguridadSocial = workbook.addWorksheet('Seguridad Social');  
@@ -79,69 +76,81 @@ hojaDatosBasicos.addRow(['fieldset', cliente.fieldset]);
   hojaSeguridadSocial.addRow(['Seguridad Social', 'Fondo_cesantias', cliente.seguridadsocial?.Fondo_cesantias || 'No disponible']);
   hojaSeguridadSocial.addRow(['Seguridad Social', 'Afp', cliente.seguridadsocial?.Afp || 'No disponible']);
  
-    // Crear la hoja "Deudas Corto Plazo"
-    const hojaDeudasCortoPlazo = workbook.addWorksheet('Deudas Corto Plazo');
+  // Crear la hoja "Deudas Corto Plazo"
+  const hojaDeudasCortoPlazo = workbook.addWorksheet('Deudas Corto Plazo');
+  if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo)) {
     cliente.DeudasCortoPlazo.forEach((valores) => {  
-        let rowNumber = hojaDeudasCortoPlazo.rowCount + 1;    
-        valores.forEach((subcampoArray, subcampo) => {        
-            hojaDeudasCortoPlazo.getCell(rowNumber, 1).value = subcampo;          
-            let columnNumber = 2;  
-            subcampoArray.forEach((valor) => {           
-                hojaDeudasCortoPlazo.getCell(rowNumber, columnNumber).value = valor;
-                columnNumber++;  
-            });    
-            rowNumber++;
-        });
+      let rowNumber = hojaDeudasCortoPlazo.rowCount + 1;    
+      valores.forEach((subcampoArray, subcampo) => {        
+        hojaDeudasCortoPlazo.getCell(rowNumber, 1).value = subcampo;          
+        let columnNumber = 2;  
+        subcampoArray.forEach((valor) => {           
+          hojaDeudasCortoPlazo.getCell(rowNumber, columnNumber).value = valor;
+          columnNumber++;  
+        });    
+        rowNumber++;
+      });
     });
+  } else {
+    hojaDeudasCortoPlazo.addRow(['No hay deudas a corto plazo disponibles']);
+  }
 
-    // Crear la hoja "Deudas Largo Plazo"
-    const hojaDeudasLargoPlazo = workbook.addWorksheet('Deudas Largo Plazo');
+  // Crear la hoja "Deudas Largo Plazo"
+  const hojaDeudasLargoPlazo = workbook.addWorksheet('Deudas Largo Plazo');
+  if (cliente.DeudasLargoPlazo && Array.isArray(cliente.DeudasLargoPlazo)) {
     cliente.DeudasLargoPlazo.forEach((valores) => {  
-        let rowNumber = hojaDeudasLargoPlazo.rowCount + 1;    
-        valores.forEach((subcampoArray, subcampo) => {        
-            hojaDeudasLargoPlazo.getCell(rowNumber, 1).value = subcampo;          
-            let columnNumber = 2;  
-            subcampoArray.forEach((valor) => {           
-                hojaDeudasLargoPlazo.getCell(rowNumber, columnNumber).value = valor;
-                columnNumber++;  
-            });    
-            rowNumber++;
-        });
+      let rowNumber = hojaDeudasLargoPlazo.rowCount + 1;    
+      valores.forEach((subcampoArray, subcampo) => {        
+        hojaDeudasLargoPlazo.getCell(rowNumber, 1).value = subcampo;          
+        let columnNumber = 2;  
+        subcampoArray.forEach((valor) => {           
+          hojaDeudasLargoPlazo.getCell(rowNumber, columnNumber).value = valor;
+          columnNumber++;  
+        });    
+        rowNumber++;
+      });
     });
+  } else {
+    hojaDeudasLargoPlazo.addRow(['No hay deudas a largo plazo disponibles']);
+  }
 
-      // Crear la hoja "Objetivos"
-    const hojaObjetivos = workbook.addWorksheet('Objetivos');
+  // Crear la hoja "Objetivos"
+  const hojaObjetivos = workbook.addWorksheet('Objetivos');
+  if (cliente.objetivos && Array.isArray(cliente.objetivos)) {
     cliente.objetivos.forEach((valores) => {  
-        let rowNumber = hojaObjetivos.rowCount + 1;    
-        valores.forEach((subcampoArray, subcampo) => {        
-            hojaObjetivos.getCell(rowNumber, 1).value = subcampo;          
-            let columnNumber = 2;  
-            subcampoArray.forEach((valor) => {           
-                hojaObjetivos.getCell(rowNumber, columnNumber).value = valor;
-                columnNumber++;  
-            });    
-            rowNumber++;
-        });
+      let rowNumber = hojaObjetivos.rowCount + 1;    
+      valores.forEach((subcampoArray, subcampo) => {        
+        hojaObjetivos.getCell(rowNumber, 1).value = subcampo;          
+        let columnNumber = 2;  
+        subcampoArray.forEach((valor) => {           
+          hojaObjetivos.getCell(rowNumber, columnNumber).value = valor;
+          columnNumber++;  
+        });    
+        rowNumber++;
+      });
     });
+  } else {
+    hojaObjetivos.addRow(['No hay objetivos disponibles']);
+  }
 
-
-
-// Crear la hoja "Ingresos"
-const hojaIngresos = workbook.addWorksheet('Ingresos');
-for (let tipoIngreso in cliente.ingresos) {
-  if (cliente.ingresos.hasOwnProperty(tipoIngreso)) {
-    const ingreso = cliente.ingresos[tipoIngreso];    
-    for (let empresa in ingreso) {
-      if (ingreso.hasOwnProperty(empresa)) {       
-        hojaIngresos.addRow([tipoIngreso, empresa, ingreso[empresa]]);
+  // Crear la hoja "Ingresos"
+  const hojaIngresos = workbook.addWorksheet('Ingresos');
+  if (cliente.ingresos && typeof cliente.ingresos === 'object') {
+    for (let tipoIngreso in cliente.ingresos) {
+      if (cliente.ingresos.hasOwnProperty(tipoIngreso)) {
+        const ingreso = cliente.ingresos[tipoIngreso];    
+        for (let empresa in ingreso) {
+          if (ingreso.hasOwnProperty(empresa)) {       
+            hojaIngresos.addRow([tipoIngreso, empresa, ingreso[empresa]]);
+          }
+        }
       }
     }
+  } else {
+    hojaIngresos.addRow(['No hay ingresos disponibles']);
   }
-}
-
 
   // Crear la hoja "Ahorro"
-  console.log(cliente.Ahorro)
   const hojaAhorro = workbook.addWorksheet('Ahorro');
   addArrayRows(hojaAhorro, 'Ahorro', 'Empresa oracle', cliente.Ahorro?.['Empresa oracle']);
   addArrayRows(hojaAhorro, 'Ahorro', 'Bancolombia', cliente.Ahorro?.Bancolombia);
@@ -159,25 +168,14 @@ for (let tipoIngreso in cliente.ingresos) {
   hojaDescuentosNomina.addRow(['Descuentos Nomina', 'Salud 1', cliente.descuentosnomina?.['Salud 1']]);
   hojaDescuentosNomina.addRow(['Descuentos Nomina', 'Aporte_a_fondo_de_solidaridad', cliente.descuentosnomina?.['Aporte_a_fondo_de_solidaridad']]);
 
+  // Establecer los encabezados para la descarga
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename=cliente_${cliente.cedula}.xlsx`);
 
-
-
-
-
-
-// Establecer los encabezados de la respuesta para la descarga
-res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-res.setHeader('Content-Disposition', `attachment; filename=cliente_${cliente.cedula}.xlsx`);
-
-
-
-
-
-
-  // Guardar el archivo Excel
-  //await workbook.xlsx.writeFile(`cliente_${cliente.cedula}.xlsx`);
+  // Escribir el archivo Excel a la respuesta
   await workbook.xlsx.write(res);
   console.log('Archivo Excel generado con éxito');
 };
+
 
 module.exports = obtenerClientePorCedulaEnJSON;
