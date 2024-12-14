@@ -42,6 +42,7 @@ const generarExcel = async (cliente, res) => {
     }
   };
 
+
   // Crear la hoja "Datos Básicos"
   const hojaDatosBasicos = workbook.addWorksheet('Datos Básicos');
   hojaDatosBasicos.addRow(['Campo Principal', 'Subcampo', 'Valor']);
@@ -68,13 +69,19 @@ const generarExcel = async (cliente, res) => {
   hojaDatosBasicos.addRow(['contraseña', cliente.contraseña]);
   hojaDatosBasicos.addRow(['fieldset', cliente.fieldset]);
 
-  // Crear la hoja "Seguridad Social"  
-  const hojaSeguridadSocial = workbook.addWorksheet('Seguridad Social');  
-  hojaSeguridadSocial.addRow(['Seguridad Social', 'Eps', cliente.seguridadsocial?.Eps || 'No disponible']);
-  hojaSeguridadSocial.addRow(['Seguridad Social', 'Medicina_prepagada', cliente.seguridadsocial?.Medicina_prepagada || 'No disponible']);
-  hojaSeguridadSocial.addRow(['Seguridad Social', 'Arl', cliente.seguridadsocial?.Arl || 'No disponible']);
-  hojaSeguridadSocial.addRow(['Seguridad Social', 'Fondo_cesantias', cliente.seguridadsocial?.Fondo_cesantias || 'No disponible']);
-  hojaSeguridadSocial.addRow(['Seguridad Social', 'Afp', cliente.seguridadsocial?.Afp || 'No disponible']);
+  
+// Crear la hoja "Seguridad Social"  
+  if (cliente.seguridadsocial) {
+    const hojaSeguridadSocial = workbook.addWorksheet('Seguridad Social');
+    Object.keys(cliente.seguridadsocial).forEach(key => {
+      const valor = cliente.seguridadsocial[key];   
+      hojaSeguridadSocial.addRow([        
+        key, 
+        valor || 'No disponible' 
+      ]);
+    });
+  }
+
  
   // Crear la hoja "Deudas Corto Plazo"
   const hojaDeudasCortoPlazo = workbook.addWorksheet('Deudas Corto Plazo');
@@ -140,8 +147,11 @@ const generarExcel = async (cliente, res) => {
       if (cliente.ingresos.hasOwnProperty(tipoIngreso)) {
         const ingreso = cliente.ingresos[tipoIngreso];    
         for (let empresa in ingreso) {
-          if (ingreso.hasOwnProperty(empresa)) {       
-            hojaIngresos.addRow([tipoIngreso, empresa, ingreso[empresa]]);
+          if (ingreso.hasOwnProperty(empresa)) {               
+            
+            const clave =  Object.keys(ingreso[empresa])   
+            const valor =  Object.values(ingreso[empresa])  
+            hojaIngresos.addRow([tipoIngreso, clave[0].split('-')[1], valor[0] ]);
           }
         }
       }
@@ -151,9 +161,20 @@ const generarExcel = async (cliente, res) => {
   }
 
   // Crear la hoja "Ahorro"
-  const hojaAhorro = workbook.addWorksheet('Ahorro');
-  addArrayRows(hojaAhorro, 'Ahorro', 'Empresa oracle', cliente.Ahorro?.['Empresa oracle']);
-  addArrayRows(hojaAhorro, 'Ahorro', 'Bancolombia', cliente.Ahorro?.Bancolombia);
+
+
+
+  const hojaAhorro  = workbook.addWorksheet('Ahorro');
+  if (cliente.Ahorro && typeof cliente.Ahorro === 'object') {
+    const clave =  Object.keys( cliente.Ahorro)   
+    const valor =  Object.values( cliente.Ahorro)  
+    for (let Ahorro in clave) {  
+      hojaAhorro.addRow([clave[Ahorro].split('-')[0], clave[Ahorro].split('-')[1], valor[Ahorro] ]);
+ 
+  }}
+
+ 
+ 
 
   // Crear la hoja "Transporte"
   const hojaTransporte = workbook.addWorksheet('Transporte');
