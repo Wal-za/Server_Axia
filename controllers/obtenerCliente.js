@@ -50,12 +50,13 @@ const generarExcel = async (cliente, res) => {
 
     // Crear la hoja "Datos Básicos"
     const hojaDatosBasicos = workbook.addWorksheet('Datos Básicos');
+    hojaDatosBasicos.addRow(['Sexo',cliente.sexo ]);
     hojaDatosBasicos.addRow(['nombre', cliente.nombre]);
     hojaDatosBasicos.addRow(['apellidos', cliente.apellidos]);
     hojaDatosBasicos.addRow(['cedula', cliente.cedula]);
     hojaDatosBasicos.addRow(['fechaNacimiento', cliente.fechaNacimiento]);
-    hojaDatosBasicos.addRow(['edad', cliente.edad]);
     hojaDatosBasicos.addRow(['lugarNacimiento', cliente.lugarNacimiento]);
+    hojaDatosBasicos.addRow(['edad', cliente.edad]);   
     hojaDatosBasicos.addRow(['direccionCasa', cliente.direccionCasa]);
     hojaDatosBasicos.addRow(['direccionOficina', cliente.direccionOficina]);
     hojaDatosBasicos.addRow(['celular', cliente.celular]);
@@ -74,14 +75,16 @@ const generarExcel = async (cliente, res) => {
 
     // Crear la hoja "Seguridad Social"  
     if (cliente.seguridadsocial) {
+        console.log(cliente.seguridadsocial)
+
         const hojaSeguridadSocial = workbook.addWorksheet('Seguridad Social');
-        Object.keys(cliente.seguridadsocial).forEach(key => {
-            const valor = cliente.seguridadsocial[key];
-            hojaSeguridadSocial.addRow([
-                key,
-                valor || 'No disponible'
-            ]);
-        });
+        hojaSeguridadSocial.addRow(['Eps', cliente.seguridadsocial?.EPS || '']);
+        hojaSeguridadSocial.addRow(['Arl', cliente.seguridadsocial?.ARL || '']);
+        hojaSeguridadSocial.addRow(['Fondo_cesantias', cliente.seguridadsocial?.Fondo_Cesantias || '']);  
+        hojaSeguridadSocial.addRow(['Afp', cliente.seguridadsocial?.AFP || '']);
+        hojaSeguridadSocial.addRow(['', '']);
+        hojaSeguridadSocial.addRow(['Medicina_prepagada', cliente.seguridadsocial?.Medicina_Prepagada || '']);
+       
     }
 
 
