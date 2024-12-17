@@ -86,7 +86,7 @@ const generarExcel = async (cliente, res) => {
     }
 
     // Crear la hoja "Ingresos"
-    if (cliente.ingresos && typeof cliente.ingresos === 'object') {        
+    if (cliente.ingresos && typeof cliente.ingresos === 'object' && Object.keys(cliente.ingresos).length > 0) {   
        const hojaIngresos = workbook.addWorksheet('Ingresos');
         for (let tipoIngreso in cliente.ingresos) {
             if (cliente.ingresos.hasOwnProperty(tipoIngreso)) {
@@ -103,7 +103,7 @@ const generarExcel = async (cliente, res) => {
     } 
 
     // Crear la hoja "Ahorro"    
-    if (cliente.Ahorro && typeof cliente.Ahorro === 'object') {       
+    if (cliente.Ahorro && typeof cliente.Ahorro === 'object' && Object.keys(cliente.Ahorro).length > 0) {     
         const hojaAhorro = workbook.addWorksheet('Ahorro');
         const clave = Object.keys(cliente.Ahorro)
         const valor = Object.values(cliente.Ahorro)
@@ -114,7 +114,7 @@ const generarExcel = async (cliente, res) => {
 
 
       // Crear la hoja "Transporte"      
-      if (cliente.Transporte && typeof cliente.Transporte === 'object') {
+      if (cliente.Transporte && typeof cliente.Transporte === 'object' && Object.keys(cliente.Transporte).length > 0) {
         const hojaTransporte = workbook.addWorksheet('Transporte');
           const clave = Object.keys(cliente.Transporte)
           const valor = Object.values(cliente.Transporte)
@@ -124,7 +124,7 @@ const generarExcel = async (cliente, res) => {
       }
 
        // Crear la hoja "gastosPersonales"
-    if (cliente.gastosPersonales && typeof cliente.gastosPersonales === 'object') {
+       if (cliente.gastosPersonales && typeof cliente.gastosPersonales === 'object' && Object.keys(cliente.gastosPersonales).length > 0) {
         const gastosPersonales = workbook.addWorksheet('Gastos Personales');
         const clave = Object.keys(cliente.gastosPersonales);
         const valor = Object.values(cliente.gastosPersonales);
@@ -134,7 +134,7 @@ const generarExcel = async (cliente, res) => {
     }
 
     // Crear la hoja "hogar"  
-    if (cliente.hogar && typeof cliente.hogar === 'object') {
+    if (cliente.hogar && typeof cliente.hogar === 'object' && Object.keys(cliente.hogar).length > 0) {
         const hogar = workbook.addWorksheet('hogar');
         const clave = Object.keys(cliente.hogar);
         const valor = Object.values(cliente.hogar);
@@ -144,7 +144,7 @@ const generarExcel = async (cliente, res) => {
     }
 
   // Crear la hoja " Entretenimiento"   
-  if (cliente.entretenimiento && typeof cliente.entretenimiento === 'object') {
+  if (cliente.entretenimiento && typeof cliente.entretenimiento === 'object' && Object.keys(cliente.entretenimiento).length > 0) {
     const hojaentretenimiento = workbook.addWorksheet('Entretenimiento');
     const clave = Object.keys(cliente.entretenimiento)
     const valor = Object.values(cliente.entretenimiento)
@@ -155,8 +155,8 @@ const generarExcel = async (cliente, res) => {
 
 
  // Crear la hoja "protecciones" 
- if (cliente.protecciones && typeof cliente.protecciones === 'object') {
-     const protecciones = workbook.addWorksheet('protecciones');
+ if (cliente.protecciones && typeof cliente.protecciones === 'object' && Object.keys(cliente.protecciones).length > 0) {
+    const protecciones = workbook.addWorksheet('protecciones');
      const clave = Object.keys(cliente.protecciones);
      const valor = Object.values(cliente.protecciones);
      for (let Index in clave) {
@@ -165,7 +165,7 @@ const generarExcel = async (cliente, res) => {
  }
 
  // Crear la hoja "Descuentos Nomina"    
- if (cliente.descuentosnomina && typeof cliente.descuentosnomina === 'object') {
+ if (cliente.descuentosnomina && typeof cliente.descuentosnomina === 'object' && Object.keys(cliente.descuentosnomina).length > 0) {
     const hojaDescuentosNomina = workbook.addWorksheet('Descuentos Nomina');
     const clave = Object.keys(cliente.descuentosnomina)
     const valor = Object.values(cliente.descuentosnomina)
@@ -177,8 +177,8 @@ const generarExcel = async (cliente, res) => {
 
 
   // Crear la hoja " Educacion"
-  if (cliente.educacion && typeof cliente.educacion === 'object') {
-      const hojaeducacion = workbook.addWorksheet('Educacion');
+  if (cliente.educacion && typeof cliente.educacion === 'object' && Object.keys(cliente.educacion).length > 0) {
+    const hojaeducacion = workbook.addWorksheet('Educacion');
       const clave = Object.keys(cliente.educacion)
       const valor = Object.values(cliente.educacion)
       for (let Index in clave) {
@@ -188,7 +188,7 @@ const generarExcel = async (cliente, res) => {
 
 
 // Crear la hoja " Financieros"
-if (cliente.financieros && typeof cliente.financieros === 'object') {
+if (cliente.financieros && typeof cliente.financieros === 'object' && Object.keys(cliente.financieros).length > 0) {
     const hojafinancieros = workbook.addWorksheet('Financieros');
     const clave = Object.keys(cliente.financieros)
     const valor = Object.values(cliente.financieros)
@@ -199,7 +199,7 @@ if (cliente.financieros && typeof cliente.financieros === 'object') {
 
 
 // Crear la hoja "otros"
-if (cliente.otros && typeof cliente.otros === 'object') {
+if (cliente.otros && typeof cliente.otros === 'object' && Object.keys(cliente.otros).length > 0) {
     const otros = workbook.addWorksheet('otros');
     const clave = Object.keys(cliente.otros);
     const valor = Object.values(cliente.otros);
@@ -209,7 +209,7 @@ if (cliente.otros && typeof cliente.otros === 'object') {
 }
 
  // Crear la hoja "seguros" 
- if (cliente.seguros && typeof cliente.seguros === 'object') {
+ if (cliente.seguros && typeof cliente.seguros === 'object' && Object.keys(cliente.seguros).length > 0) {
     const seguros = workbook.addWorksheet('seguros');
      const clave = Object.keys(cliente.seguros);
      const valor = Object.values(cliente.seguros);
@@ -220,7 +220,7 @@ if (cliente.otros && typeof cliente.otros === 'object') {
 
 
    // Crear la hoja "AnualidadesFijas"   
-   if (cliente.AnualidadesFijas && typeof cliente.AnualidadesFijas === 'object') {
+   if (cliente.AnualidadesFijas && typeof cliente.AnualidadesFijas === 'object' && Object.keys(cliente.AnualidadesFijas).length > 0) {
        const AnualidadesFijas = workbook.addWorksheet('Anualidades Fijas');
        const clave = Object.keys(cliente.AnualidadesFijas);
        const valor = Object.values(cliente.AnualidadesFijas);
@@ -230,9 +230,10 @@ if (cliente.otros && typeof cliente.otros === 'object') {
    }
 
      // Crear la hoja "AnualidadesPresupuestadas"
-     const AnualidadesPresupuestadas = workbook.addWorksheet('Anualidades Presupuestadas');
-     if (cliente.AnualidadesPresupuestadas && typeof cliente.AnualidadesPresupuestadas === 'object') {
-         const clave = Object.keys(cliente.AnualidadesPresupuestadas);
+
+     if (cliente.AnualidadesPresupuestadas && typeof cliente.AnualidadesPresupuestadas === 'object' && Object.keys(cliente.AnualidadesPresupuestadas).length > 0) {
+        const AnualidadesPresupuestadas = workbook.addWorksheet('Anualidades Presupuestadas');
+        const clave = Object.keys(cliente.AnualidadesPresupuestadas);
          const valor = Object.values(cliente.AnualidadesPresupuestadas);
          for (let Index in clave) {
              AnualidadesPresupuestadas.addRow([clave[Index].replace(/_/g, ' '), Number(valor[Index])]);
@@ -241,7 +242,7 @@ if (cliente.otros && typeof cliente.otros === 'object') {
 
 
       // Crear la hoja "Impuestos"    
-    if (cliente.Impuestos && typeof cliente.Impuestos === 'object') {
+      if (cliente.Impuestos && typeof cliente.Impuestos === 'object' && Object.keys(cliente.Impuestos).length > 0) {
         const Impuestos = workbook.addWorksheet('Impuestos');
         const clave = Object.keys(cliente.Impuestos);
         const valor = Object.values(cliente.Impuestos);
@@ -254,7 +255,7 @@ if (cliente.otros && typeof cliente.otros === 'object') {
 
 
 //Crear la hoja "Objetivos"
-if (cliente.objetivos && Array.isArray(cliente.objetivos)) {
+if (cliente.objetivos && Array.isArray(cliente.objetivos) && cliente.objetivos.length > 0) {
     const hojaObjetivos = workbook.addWorksheet('Objetivos');
     let columnNumber = 1; 
     cliente.objetivos.forEach((valores) => {
@@ -272,8 +273,8 @@ if (cliente.objetivos && Array.isArray(cliente.objetivos)) {
 }
 
 // Crear la hoja "activo Liquidos"
-const activoLiquidos = workbook.addWorksheet('activo Liquidos');
-if (cliente.activoLiquidos && typeof cliente.activoLiquidos === 'object') {
+if (cliente.activoLiquidos && typeof cliente.activoLiquidos === 'object' && Object.keys(cliente.activoLiquidos).length > 0) {
+    const activoLiquidos = workbook.addWorksheet('activo Liquidos');
     const clave = Object.keys(cliente.activoLiquidos);
     const valor = Object.values(cliente.activoLiquidos);
     for (let Index in clave) {
@@ -284,8 +285,8 @@ if (cliente.activoLiquidos && typeof cliente.activoLiquidos === 'object') {
  
 
 // Crear la hoja "activosProductivos"
-const activosProductivos = workbook.addWorksheet('activos Productivos');
-if (cliente.activosProductivos && typeof cliente.activosProductivos === 'object') {
+if (cliente.activosProductivos && typeof cliente.activosProductivos === 'object' && Object.keys(cliente.activosProductivos).length > 0) {
+    const activosProductivos = workbook.addWorksheet('activos Productivos');
     const clave = Object.keys(cliente.activosProductivos);
     const valor = Object.values(cliente.activosProductivos);
     for (let Index in clave) {
@@ -295,7 +296,7 @@ if (cliente.activosProductivos && typeof cliente.activosProductivos === 'object'
 
 
 // Crear la hoja "activosImproductivos"
-if (cliente.activosImproductivos && typeof cliente.activosImproductivos === 'object') {
+if (cliente.activosImproductivos && typeof cliente.activosImproductivos === 'object' && Object.keys(cliente.activosImproductivos).length > 0) {
     const activosImproductivos = workbook.addWorksheet('activos Improductivos');
     const claves = Object.keys(cliente.activosImproductivos);
     const valores = Object.values(cliente.activosImproductivos);
@@ -307,7 +308,7 @@ if (cliente.activosImproductivos && typeof cliente.activosImproductivos === 'obj
 
 
 // Crear la hoja "Deudas Corto Plazo"  
-if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo)) {
+if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo) && cliente.DeudasCortoPlazo.length > 0) {  
     const hojaDeudasCortoPlazo = workbook.addWorksheet('Deudas Corto Plazo');
     let columnNumber = 1; 
     cliente.DeudasCortoPlazo.forEach((valores) => {
@@ -326,9 +327,9 @@ if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo)) {
 
 
 // Crear la hoja "Deudas Largo Plazo"
-const hojaDeudasLargoPlazo = workbook.addWorksheet('Deudas Largo Plazo');
-if (cliente.DeudasLargoPlazo && Array.isArray(cliente.DeudasLargoPlazo)) {
-    let columnNumber = 1;
+if (cliente.DeudasLargoPlazo && Array.isArray(cliente.DeudasLargoPlazo) && cliente.DeudasLargoPlazo.length > 0) {  
+    const hojaDeudasLargoPlazo = workbook.addWorksheet('Deudas Largo Plazo'); 
+     let columnNumber = 1;
     cliente.DeudasLargoPlazo.forEach((valores) => {
         valores.forEach((subcampoArray, subcampo) => {
             hojaDeudasLargoPlazo.getCell(1, columnNumber).value = subcampo; 
