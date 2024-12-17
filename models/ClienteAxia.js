@@ -30,6 +30,7 @@ const ClienteAxiasSchema = new Schema({
   // Secciones financieras (Mixed para estructuras dinámicas)
   seguridadsocial: { type: Schema.Types.Mixed, required: false },
   ingresos: { type: Schema.Types.Mixed, required: false },
+  IngresosAnuales: { type: Schema.Types.Mixed, required: false },
   Ahorro: { type: Schema.Types.Mixed, required: false },
   Transporte: { type: Schema.Types.Mixed, required: false },
   gastosPersonales: { type: Schema.Types.Mixed, required: false },

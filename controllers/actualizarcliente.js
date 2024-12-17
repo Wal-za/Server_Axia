@@ -4,7 +4,7 @@ const ClienteFormulario = require('../models/ClienteAxia'); // Modelo Cliente
 const actualizarCliente = async (req, res) => {
   try {
     const { 
-      seguridadsocial, ingresos, Ahorro, Transporte, 
+      seguridadsocial, ingresos, ingresosanuales, Ahorro, Transporte, 
       gastosPersonales, hogar, entretenimiento, protecciones, 
       descuentosnomina, educacion, financieros, otros, 
       seguros, AnualidadesFijas, AnualidadesPresupuestadas, 

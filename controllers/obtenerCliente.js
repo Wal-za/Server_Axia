@@ -102,6 +102,7 @@ const generarExcel = async (cliente, res) => {
         }
     } 
 
+    
     // Crear la hoja "Ahorro"    
     if (cliente.Ahorro && typeof cliente.Ahorro === 'object' && Object.keys(cliente.Ahorro).length > 0) {     
         const hojaAhorro = workbook.addWorksheet('Ahorro');
@@ -197,6 +198,17 @@ if (cliente.financieros && typeof cliente.financieros === 'object' && Object.key
     }
 }
 
+ // Crear la hoja Ingresos Anuales    
+ if (cliente.IngresosAnuales && typeof cliente.IngresosAnuales === 'object' && Object.keys(cliente.IngresosAnuales).length > 0) {     
+    const hojaAhorro = workbook.addWorksheet('Ingresos Anuales');
+    const clave = Object.keys(cliente.IngresosAnuales)
+    const valor = Object.values(cliente.IngresosAnuales)
+    for (let Index in clave) {
+        hojaAhorro.addRow([clave[Index].replace(/[-_]/g, ' '),  Number(valor[Index])]);
+    }
+} 
+
+
 
 // Crear la hoja "otros"
 if (cliente.otros && typeof cliente.otros === 'object' && Object.keys(cliente.otros).length > 0) {
@@ -252,10 +264,10 @@ if (cliente.otros && typeof cliente.otros === 'object' && Object.keys(cliente.ot
     }
 
 
-
+   
 
 //Crear la hoja "Objetivos"
-if (cliente.objetivos && Array.isArray(cliente.objetivos) && cliente.objetivos.length > 0) {
+if (cliente.objetivos && Array.isArray(cliente.objetivos) && JSON.stringify(cliente.objetivos[0]) != '{}') {
     const hojaObjetivos = workbook.addWorksheet('Objetivos');
     let columnNumber = 1; 
     cliente.objetivos.forEach((valores) => {
@@ -273,7 +285,7 @@ if (cliente.objetivos && Array.isArray(cliente.objetivos) && cliente.objetivos.l
 }
 
 // Crear la hoja "activo Liquidos"
-if (cliente.activoLiquidos && typeof cliente.activoLiquidos === 'object' && Object.keys(cliente.activoLiquidos).length > 0) {
+if (cliente.activoLiquidos && typeof cliente.activoLiquidos === 'object' && Object.keys(cliente.activoLiquidos).length > 1) {
     const activoLiquidos = workbook.addWorksheet('activo Liquidos');
     const clave = Object.keys(cliente.activoLiquidos);
     const valor = Object.values(cliente.activoLiquidos);
@@ -281,6 +293,7 @@ if (cliente.activoLiquidos && typeof cliente.activoLiquidos === 'object' && Obje
         activoLiquidos.addRow([clave[Index].replace(/_/g, ' ').split('-')[0], clave[Index].replace(/_/g, ' ').split('-')[1], Number(valor[Index])]);
     }
 }
+
 
  
 
@@ -307,8 +320,10 @@ if (cliente.activosImproductivos && typeof cliente.activosImproductivos === 'obj
 }
 
 
+
+
 // Crear la hoja "Deudas Corto Plazo"  
-if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo) && cliente.DeudasCortoPlazo.length > 0) {  
+if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo) && JSON.stringify(cliente.DeudasCortoPlazo[0]) != '{}') {  
     const hojaDeudasCortoPlazo = workbook.addWorksheet('Deudas Corto Plazo');
     let columnNumber = 1; 
     cliente.DeudasCortoPlazo.forEach((valores) => {
@@ -326,8 +341,11 @@ if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo) && clien
 }
 
 
+
+
+
 // Crear la hoja "Deudas Largo Plazo"
-if (cliente.DeudasLargoPlazo && Array.isArray(cliente.DeudasLargoPlazo) && cliente.DeudasLargoPlazo.length > 0) {  
+if (cliente.DeudasLargoPlazo && Array.isArray(cliente.DeudasLargoPlazo) && JSON.stringify(cliente.DeudasLargoPlazo[0]) != '{}') {  
     const hojaDeudasLargoPlazo = workbook.addWorksheet('Deudas Largo Plazo'); 
      let columnNumber = 1;
     cliente.DeudasLargoPlazo.forEach((valores) => {
