@@ -40,11 +40,11 @@ const actualizarCliente = async (req, res) => {
           if (key === 'objetivos' && Array.isArray(objetivos) && objetivos.length > 0) {
             cliente[key] = objetivos.map((obj, index) => ({
               [`objetivo-${index}`]: {
-                objetivo: obj.objetivo || "",
-                descripcion: obj.descripcion || "",
+                objetivo: obj.objetivo || "0",
+                descripcion: obj.descripcion || "0",
                 plazo: obj.plazo || 0,
                 vrObjetivo: obj.vrObjetivo || 0,
-                comentarios: obj.comentarios || ""
+                comentarios: obj.comentarios || "0"
               }
             }));
           }
@@ -52,12 +52,12 @@ const actualizarCliente = async (req, res) => {
           else if (key === 'DeudasCortoPlazo' && Array.isArray(DeudasCortoPlazo) && DeudasCortoPlazo.length > 0) {
             cliente[key] = DeudasCortoPlazo.map((deuda, index) => ({
               [`pasivo-${index}`]: {
-                pasivo: deuda.pasivo || "",
-                saldoCapital: deuda.saldoCapital || "",
-                entidad: deuda.entidad || "",
-                tasa: deuda.tasa || "",
-                cuotasPendientes: deuda.cuotasPendientes || "",
-                cuotaMensual: deuda.cuotaMensual || ""
+                pasivo: deuda.pasivo || "0",
+                saldoCapital: deuda.saldoCapital || "0",
+                entidad: deuda.entidad || "0",
+                tasa: deuda.tasa || "0",
+                cuotasPendientes: deuda.cuotasPendientes || "0",
+                cuotaMensual: deuda.cuotaMensual || "0"
               }
             }));
           } 
@@ -65,12 +65,12 @@ const actualizarCliente = async (req, res) => {
           else if (key === 'DeudasLargoPlazo' && Array.isArray(DeudasLargoPlazo) && DeudasLargoPlazo.length > 0) {
             cliente[key] = DeudasLargoPlazo.map((deuda, index) => ({
               [`pasivo-${index}`]: {
-                pasivo: deuda.pasivo || "",
-                saldoCapital: deuda.saldoCapital || "",
-                entidad: deuda.entidad || "",
-                tasa: deuda.tasa || "",
-                cuotasPendientes: deuda.cuotasPendientes || "",
-                cuotaMensual: deuda.cuotaMensual || ""
+                pasivo: deuda.pasivo || "0",
+                saldoCapital: deuda.saldoCapital || "0",
+                entidad: deuda.entidad || "0",
+                tasa: deuda.tasa || "0",
+                cuotasPendientes: deuda.cuotasPendientes || "0",
+                cuotaMensual: deuda.cuotaMensual || "0"
               }
             }));
           }
