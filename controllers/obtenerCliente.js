@@ -434,76 +434,87 @@ if (cliente.activoLiquidos && typeof cliente.activoLiquidos === 'object' && clie
 
 
 
-    const ordenColumnas = ['pasivo', 'saldoCapital', 'entidad', 'tasa', 'cuotasPendientes', 'cuotaMensual'];
+   // Crear la hoja "Deudas Corto Plazo"
+if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo) && JSON.stringify(cliente.DeudasCortoPlazo[0]) != '{}') {
+    const hojaDeudasCortoPlazo = workbook.addWorksheet('Deudas Corto Plazo');
+    let columnNumber = 1;
 
-    //Deudas corto plazo
-    if (cliente.DeudasCortoPlazo && Array.isArray(cliente.DeudasCortoPlazo) && JSON.stringify(cliente.DeudasCortoPlazo[0]) != '{}') {
-        const hojaDeudasCortoPlazo = workbook.addWorksheet('Deudas Corto Plazo');
-        let columnNumber = 1;
-    
-        cliente.DeudasCortoPlazo.forEach((valores) => {
-            ordenColumnas.forEach((subcampo) => {
-                const subcampoArray = valores[subcampo];
-                hojaDeudasCortoPlazo.getCell(1, columnNumber).value = subcampo;
-    
-                let rowNumber = 2;
-    
-                if (subcampo.toLowerCase() === 'tasa') {
-                    const valor = Array.isArray(subcampoArray) ? subcampoArray : [subcampoArray];
-                    valor.forEach((valorItem) => {
-                        const numericValue = isNaN(valorItem) ? valorItem : Number(valorItem) / 100;
-                        hojaDeudasCortoPlazo.getCell(rowNumber, columnNumber).value = numericValue;
-                        hojaDeudasCortoPlazo.getCell(rowNumber, columnNumber).numFmt = '0.00%';
-                        rowNumber++;
-                    });
-                } else {
-                    const valor = Array.isArray(subcampoArray) ? subcampoArray : [subcampoArray];
-                    valor.forEach((valorItem) => {
-                        const numericValue = isNaN(valorItem) ? valorItem : Number(valorItem);
-                        hojaDeudasCortoPlazo.getCell(rowNumber, columnNumber).value = numericValue;
-                        rowNumber++;
-                    });
+    // Orden de los campos
+    const ordenCampos = ['pasivo', 'saldoCapital', 'entidad', 'tasa', 'cuotasPendientes', 'cuotaMensual'];
+
+    cliente.DeudasCortoPlazo.forEach((valores) => {
+        ordenCampos.forEach((subcampo) => {
+            const subcampoArray = valores[subcampo] || [];
+            hojaDeudasCortoPlazo.getCell(1, columnNumber).value = subcampo;
+            let rowNumber = 2;
+
+            // Si el subcampo es 'tasa', le aplicamos formato de porcentaje
+            if (subcampo.toLowerCase() === 'tasa') {
+                if (!Array.isArray(subcampoArray)) {
+                    subcampoArray = [subcampoArray];
                 }
-    
-                columnNumber++;
-            });
-        });
-    }
-    
-    //Deudas largo plazo
-    if (cliente.DeudasLargoPlazo && Array.isArray(cliente.DeudasLargoPlazo) && JSON.stringify(cliente.DeudasLargoPlazo[0]) != '{}') {
-        const hojaDeudasLargoPlazo = workbook.addWorksheet('Deudas Largo Plazo');
-        let columnNumber = 1;
-    
-        cliente.DeudasLargoPlazo.forEach((valores) => {
-            ordenColumnas.forEach((subcampo) => {
-                const subcampoArray = valores[subcampo];
-                hojaDeudasLargoPlazo.getCell(1, columnNumber).value = subcampo;
-    
-                let rowNumber = 2;
-    
-                if (subcampo.toLowerCase() === 'tasa') {
-                    const valor = Array.isArray(subcampoArray) ? subcampoArray : [subcampoArray];
-                    valor.forEach((valorItem) => {
-                        const numericValue = isNaN(valorItem) ? valorItem : Number(valorItem) / 100;
-                        hojaDeudasLargoPlazo.getCell(rowNumber, columnNumber).value = numericValue;
-                        hojaDeudasLargoPlazo.getCell(rowNumber, columnNumber).numFmt = '0.00%';
-                        rowNumber++;
-                    });
-                } else {
-                    const valor = Array.isArray(subcampoArray) ? subcampoArray : [subcampoArray];
-                    valor.forEach((valorItem) => {
-                        const numericValue = isNaN(valorItem) ? valorItem : Number(valorItem);
-                        hojaDeudasLargoPlazo.getCell(rowNumber, columnNumber).value = numericValue;
-                        rowNumber++;
-                    });
+                subcampoArray.forEach((valor) => {
+                    const numericValue = isNaN(valor) ? valor : Number(valor) / 100;
+                    hojaDeudasCortoPlazo.getCell(rowNumber, columnNumber).value = numericValue;
+                    hojaDeudasCortoPlazo.getCell(rowNumber, columnNumber).numFmt = '0.00%';
+                    rowNumber++;
+                });
+            } else {
+                if (!Array.isArray(subcampoArray)) {
+                    subcampoArray = [subcampoArray];
                 }
-    
-                columnNumber++;
-            });
+                subcampoArray.forEach((valor) => {
+                    const numericValue = isNaN(valor) ? valor : Number(valor);
+                    hojaDeudasCortoPlazo.getCell(rowNumber, columnNumber).value = numericValue;
+                    rowNumber++;
+                });
+            }
+
+            columnNumber++;
         });
-    }
-    
+    });
+}
+
+// Crear la hoja "Deudas Largo Plazo"
+if (cliente.DeudasLargoPlazo && Array.isArray(cliente.DeudasLargoPlazo) && JSON.stringify(cliente.DeudasLargoPlazo[0]) != '{}') {
+    const hojaDeudasLargoPlazo = workbook.addWorksheet('Deudas Largo Plazo');
+    let columnNumber = 1;
+
+    // Orden de los campos
+    const ordenCampos = ['pasivo', 'saldoCapital', 'entidad', 'tasa', 'cuotasPendientes', 'cuotaMensual'];
+
+    cliente.DeudasLargoPlazo.forEach((valores) => {
+        ordenCampos.forEach((subcampo) => {
+            const subcampoArray = valores[subcampo] || [];
+            hojaDeudasLargoPlazo.getCell(1, columnNumber).value = subcampo;
+            let rowNumber = 2;
+
+            if (subcampo.toLowerCase() === 'tasa') {
+                if (!Array.isArray(subcampoArray)) {
+                    subcampoArray = [subcampoArray];
+                }
+                subcampoArray.forEach((valor) => {
+                    const numericValue = isNaN(valor) ? valor : Number(valor) / 100;
+                    hojaDeudasLargoPlazo.getCell(rowNumber, columnNumber).value = numericValue;
+                    hojaDeudasLargoPlazo.getCell(rowNumber, columnNumber).numFmt = '0.00%';
+                    rowNumber++;
+                });
+            } else {
+                if (!Array.isArray(subcampoArray)) {
+                    subcampoArray = [subcampoArray];
+                }
+                subcampoArray.forEach((valor) => {
+                    const numericValue = isNaN(valor) ? valor : Number(valor);
+                    hojaDeudasLargoPlazo.getCell(rowNumber, columnNumber).value = numericValue;
+                    rowNumber++;
+                });
+            }
+
+            columnNumber++;
+        });
+    });
+}
+
 
     // Establecer los encabezados para la descarga
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
