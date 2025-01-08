@@ -88,18 +88,44 @@ const generarExcel = async (cliente, res) => {
     // Crear la hoja "Ingresos"
     if (cliente.ingresos && typeof cliente.ingresos === 'object' && Object.keys(cliente.ingresos).length > 0) {
         const hojaIngresos = workbook.addWorksheet('Ingresos');
+        for (let tipoOtro in cliente.ingresos) {
+            if (cliente.ingresos.hasOwnProperty(tipoOtro)) {
+                let tipoOtroModificado = tipoOtro.replace(/[-_]/g, ' ');
+                const valores = cliente.ingresos[tipoOtro];
+                if (Array.isArray(valores)) {
+                    valores.forEach((valor, index) => {
+                        if (typeof valor === 'object') {
+                            for (let key in valor) {
+                                if (valor.hasOwnProperty(key)) {
+                                    hojaIngresos.addRow([key.replace(/[-_]/g, ' '), Number(valor[key])]);
+                                }
+                            }
+                        } else {
+                            hojaIngresos.addRow([tipoOtroModificado, Number(valor)]);
+                        }
+                    });
+                } else if (typeof valores === 'object') {
+                    for (let key in cliente.ingresos) {
+                        const ingresos = cliente.ingresos[key];
+                        const claves = Object.keys(ingresos);
+                        const valores = Object.values(ingresos);
+            
+                        if (claves.length === valores.length) {
+                            for (let i = 0; i < claves.length; i++) {                               
 
-        for (let key in cliente.ingresos) {
-            const ingresos = cliente.ingresos[key];
-            const claves = Object.keys(ingresos);
-            const valores = Object.values(ingresos);
+                                if(typeof(valores[i]) === 'string'){
+                                    console.log(typeof(valores[i]))
+                                    hojaIngresos.addRow([claves[i].replace(/[-_]/g, ' '), Number(valores[i])]);
+                                }                             
 
-            if (claves.length === valores.length) {
-                for (let i = 0; i < claves.length; i++) {
-                    hojaIngresos.addRow([claves[i].replace(/[-_]/g, ' '), Number(valores[i])]);
+                            }
+                        } else {
+                            console.error("Las claves y los valores no coinciden en longitud para", key);
+                        }
+                    }
+                } else if (typeof valores === 'string' || typeof valores === 'number') {
+                    hojaIngresos.addRow([tipoOtroModificado, Number(valores)]);
                 }
-            } else {
-                console.error("Las claves y los valores no coinciden en longitud para", key);
             }
         }
     }
