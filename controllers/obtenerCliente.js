@@ -673,27 +673,7 @@ const generarExcel = async (cliente, res) => {
         }
     }
 
-    // Crear la hoja "Objetivos"
-    if (cliente.objetivos && Array.isArray(cliente.objetivos) && JSON.stringify(cliente.objetivos[0]) != '{}') {
-        const hojaObjetivos = workbook.addWorksheet('Objetivos');
-        let columnNumber = 1;
-        cliente.objetivos.forEach((valores) => {
-            valores.forEach((subcampoArray, subcampo) => {
-                if (!Array.isArray(subcampoArray)) {
-                    subcampoArray = [subcampoArray];
-                }
-                hojaObjetivos.getCell(1, columnNumber).value = subcampo;
-                let rowNumber = 2;
-                subcampoArray.forEach((valor) => {
-                    const numericValue = isNaN(valor) ? valor : Number(valor);
-                    hojaObjetivos.getCell(rowNumber, columnNumber).value = numericValue;
-                    rowNumber++;
-                });
-
-                columnNumber++;
-            });
-        });
-    }
+ 
 
     // Crear la hoja "activo Liquidos"
     if (cliente.activoLiquidos && typeof cliente.activoLiquidos === 'object' && cliente.activoLiquidos !== null && Object.keys(cliente.activoLiquidos).length > 0) {
