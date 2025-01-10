@@ -13,6 +13,8 @@ const actualizarCliente = async (req, res) => {
       datosMongo 
     } = req.body;
 
+   
+
     // Buscar el cliente por la cédula que está en datosMongo
     const cliente = await ClienteFormulario.findOne({ cedula: datosMongo.cedula });
 
@@ -28,29 +30,11 @@ const actualizarCliente = async (req, res) => {
       cliente.fieldset = 0;
     }
 
-    // Revisar si los campos recibidos existen y eliminarlos si es necesario
-    const camposARevisar = [
-      'seguridadsocial', 'ingresos', 'ingresosanuales', 'Ahorro', 'Transporte', 
-      'gastosPersonales', 'hogar', 'entretenimiento', 'protecciones', 
-      'descuentosnomina', 'educacion', 'financieros', 'otros', 
-      'seguros', 'AnualidadesFijas', 'AnualidadesPresupuestadas', 
-      'Impuestos', 'activoLiquidos', 'activosProductivos', 'activosImproductivos',
-      'objetivos', 'DeudasCortoPlazo', 'DeudasLargoPlazo'
-    ];
-
-    // Iterar sobre los campos que llegan en la solicitud
-    for (let key of camposARevisar) {
-      if (req.body.hasOwnProperty(key)) {
-        // Si el campo existe en el cliente, eliminamos el campo antes de actualizarlo
-        if (cliente[key] !== undefined) {
-          delete cliente[key]; // Elimina el campo si existe
-        }
-      }
-    }
-
     // Actualizar todos los demás campos sin importar si son iguales o no al valor actual
     Object.keys(req.body).forEach(key => {
       if (key !== 'cedula' && key !== 'contraseña' && key !== 'datosMongo') {  // Excluimos la cédula, contraseña y datosMongo
+
+        // Siempre actualizamos el campo sin verificar si el valor ha cambiado
         if (req.body[key] !== undefined && req.body[key] !== null) {
           // Manejo de subdocumentos (objetivos, deudas)
           if (key === 'objetivos' && Array.isArray(objetivos) && objetivos.length > 0) {
