@@ -804,43 +804,25 @@ const generarExcel = async (cliente, res) => {
     }
 
 
-    if (cliente.objetivos && Array.isArray(cliente.objetivos) && JSON.stringify(cliente.objetivos[0]) != '{}') {
+    // Crear la hoja "Objetivos"
+    if (cliente.objetivos && Array.isArray(cliente.objetivos) && cliente.objetivos.length > 0) {
         const hojaObjetivos = workbook.addWorksheet('Objetivos');
-        let columnNumber = 1;
-    
-        cliente.objetivos.forEach((valores) => {        
-            const reorderedMap = reorderMap(valores);
-            reorderedMap.forEach((subcampoArray, subcampo) => {
-                hojaObjetivos.getCell(1, columnNumber).value = subcampo;
-                let rowNumber = 2;            
-                if (subcampo.toLowerCase() === 'tasa') {
-                    if (!Array.isArray(subcampoArray)) {
-                        subcampoArray = [subcampoArray];
-                    }
-                    subcampoArray.forEach((valor) => {
-                        const numericValue = isNaN(valor) ? valor : Number(valor) / 100;
-                        hojaObjetivos.getCell(rowNumber, columnNumber).value = numericValue;
-                        hojaObjetivos.getCell(rowNumber, columnNumber).numFmt = '0.00%';
-                        rowNumber++;
-                    });
-                } else {
-                    if (!Array.isArray(subcampoArray)) {
-                        subcampoArray = [subcampoArray];
-                    }
-    
-                    subcampoArray.forEach((valor) => {
-                        const numericValue = isNaN(valor) ? valor : Number(valor);
-                        hojaObjetivos.getCell(rowNumber, columnNumber).value = numericValue;
-                        rowNumber++;
-                    });
-                }
-    
-                columnNumber++;
+        let columnNumber = 1; 
+        cliente.objetivos.forEach((valores) => {
+            valores.forEach((subcampoArray, subcampo) => {           
+                hojaObjetivos.getCell(1, columnNumber).value = subcampo; // Coloca el encabezado
+                let rowNumber = 2; 
+                subcampoArray.forEach((valor) => {              
+                    const numericValue = isNaN(valor) ? valor : Number(valor);               
+                    hojaObjetivos.getCell(rowNumber, columnNumber).value = numericValue;
+                    rowNumber++; 
+                });
+                columnNumber++; 
             });
         });
     }
     
-
+    
 
     // Establecer los encabezados para la descarga
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
