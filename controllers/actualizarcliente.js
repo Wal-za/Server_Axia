@@ -1,98 +1,134 @@
-const ClienteFormulario = require('../models/ClienteAxia'); // Modelo Cliente
+const ClienteFormulario = require('../models/ClienteAxia');
+const deepEqual = require('deep-equal');
 
-// Controlador para actualizar el cliente
 const actualizarCliente = async (req, res) => {
+  let cambiosRealizados = false;
+
   try {
     const { 
-      seguridadsocial, ingresos, ingresosanuales, Ahorro, Transporte, 
-      gastosPersonales, hogar, entretenimiento, protecciones, 
-      descuentosnomina, educacion, financieros, otros, 
-      seguros, AnualidadesFijas, AnualidadesPresupuestadas, 
-      Impuestos, activoLiquidos, activosProductivos, activosImproductivos,
-      objetivos, DeudasCortoPlazo, DeudasLargoPlazo, 
+      DeudasCortoPlazo, DeudasLargoPlazo, objetivos, 
       datosMongo 
     } = req.body;
 
-   
+    const normalizarDeuda = (deuda) => {
+      if (deuda && typeof deuda === 'string') {
+        return [deuda];
+      }
+      if (deuda && Array.isArray(deuda)) {
+        return deuda;
+      }
+      return [];
+    };
 
-    // Buscar el cliente por la cédula que está en datosMongo
+    if (DeudasCortoPlazo) {
+      req.body.DeudasCortoPlazo = {
+        pasivo: normalizarDeuda(DeudasCortoPlazo.pasivo),
+        saldoCapital: normalizarDeuda(DeudasCortoPlazo.saldoCapital),
+        entidad: normalizarDeuda(DeudasCortoPlazo.entidad),
+        tasa: normalizarDeuda(DeudasCortoPlazo.tasa),
+        cuotasPendientes: normalizarDeuda(DeudasCortoPlazo.cuotasPendientes),
+        cuotaMensual: normalizarDeuda(DeudasCortoPlazo.cuotaMensual)
+      };
+    }
+
+    if (DeudasLargoPlazo) {
+      req.body.DeudasLargoPlazo = {
+        pasivo: normalizarDeuda(DeudasLargoPlazo.pasivo),
+        saldoCapital: normalizarDeuda(DeudasLargoPlazo.saldoCapital),
+        entidad: normalizarDeuda(DeudasLargoPlazo.entidad),
+        tasa: normalizarDeuda(DeudasLargoPlazo.tasa),
+        cuotasPendientes: normalizarDeuda(DeudasLargoPlazo.cuotasPendientes),
+        cuotaMensual: normalizarDeuda(DeudasLargoPlazo.cuotaMensual)
+      };
+    }
+
     const cliente = await ClienteFormulario.findOne({ cedula: datosMongo.cedula });
 
     if (!cliente) {
       return res.status(404).json({ message: 'Cliente no encontrado' });
     }
 
-    // Siempre actualizar el campo `fieldset` si se proporciona en datosMongo
-    if (datosMongo.hasOwnProperty('fieldset')) {
+    if (datosMongo.hasOwnProperty('fieldset') && cliente.fieldset !== datosMongo.fieldset) {
       cliente.fieldset = datosMongo.fieldset;
-    } else {
-      // Si no se pasa el campo `fieldset`, asignamos el valor predeterminado (0)
+      cambiosRealizados = true;
+    } else if (!datosMongo.hasOwnProperty('fieldset') && cliente.fieldset !== 0) {
       cliente.fieldset = 0;
+      cambiosRealizados = true;
     }
 
-    // Actualizar todos los demás campos sin importar si son iguales o no al valor actual
+    const actualizarDeudaIndividual = (deudaAntigua, deudaNueva) => {
+      if (!deepEqual(deudaAntigua, deudaNueva)) {
+        for (const campo in deudaAntigua) {
+          if (deudaAntigua.hasOwnProperty(campo)) {
+            delete deudaAntigua[campo];
+          }
+        }
+        for (const campo in deudaNueva) {
+          if (deudaNueva.hasOwnProperty(campo)) {
+            deudaAntigua[campo] = deudaNueva[campo];
+          }
+        }
+        cambiosRealizados = true;
+      }
+    };
+
+    if (DeudasCortoPlazo) {
+      const deudaCortoPlazo = cliente.DeudasCortoPlazo || {};
+      actualizarDeudaIndividual(deudaCortoPlazo, req.body.DeudasCortoPlazo);
+      cliente.DeudasCortoPlazo = deudaCortoPlazo;
+    }
+
+    if (DeudasLargoPlazo) {
+      const deudaLargoPlazo = cliente.DeudasLargoPlazo || {};
+      actualizarDeudaIndividual(deudaLargoPlazo, req.body.DeudasLargoPlazo);
+      cliente.DeudasLargoPlazo = deudaLargoPlazo;
+    }
+
+    if (objetivos) {
+      const objetivosAntiguos = cliente.objetivos || {};
+      if (!deepEqual(objetivosAntiguos, objetivos)) {
+        for (const campo in objetivosAntiguos) {
+          if (objetivosAntiguos.hasOwnProperty(campo)) {
+            delete objetivosAntiguos[campo];
+          }
+        }
+        for (const campo in objetivos) {
+          if (objetivos.hasOwnProperty(campo)) {
+            objetivosAntiguos[campo] = objetivos[campo];
+          }
+        }
+        cliente.objetivos = objetivosAntiguos;
+        cambiosRealizados = true;
+      }
+    }
+
     Object.keys(req.body).forEach(key => {
-      if (key !== 'cedula' && key !== 'contraseña' && key !== 'datosMongo') {  // Excluimos la cédula, contraseña y datosMongo
-
-        // Siempre actualizamos el campo sin verificar si el valor ha cambiado
+      if (key !== 'cedula' && key !== 'contraseña' && key !== 'datosMongo') {
         if (req.body[key] !== undefined && req.body[key] !== null) {
-          // Manejo de subdocumentos (objetivos, deudas)
-          if (key === 'objetivos' && Array.isArray(objetivos) && objetivos.length > 0) {
-            cliente[key] = objetivos.map((obj, index) => ({
-              [`objetivo-${index}`]: {
-                objetivo: obj.objetivo || "0",
-                descripcion: obj.descripcion || "0",
-                plazo: obj.plazo || 0,
-                vrObjetivo: obj.vrObjetivo || 0,
-                comentarios: obj.comentarios || "0"
-              }
-            }));
-          }
-          
-          else if (key === 'DeudasCortoPlazo' && Array.isArray(DeudasCortoPlazo) && DeudasCortoPlazo.length > 0) {
-            cliente[key] = DeudasCortoPlazo.map((deuda, index) => ({
-              [`pasivo-${index}`]: {
-                pasivo: deuda.pasivo || "0",
-                saldoCapital: deuda.saldoCapital || "0",
-                entidad: deuda.entidad || "0",
-                tasa: deuda.tasa || "0",
-                cuotasPendientes: deuda.cuotasPendientes || "0",
-                cuotaMensual: deuda.cuotaMensual || "0"
-              }
-            }));
-          } 
-          
-          else if (key === 'DeudasLargoPlazo' && Array.isArray(DeudasLargoPlazo) && DeudasLargoPlazo.length > 0) {
-            cliente[key] = DeudasLargoPlazo.map((deuda, index) => ({
-              [`pasivo-${index}`]: {
-                pasivo: deuda.pasivo || "0",
-                saldoCapital: deuda.saldoCapital || "0",
-                entidad: deuda.entidad || "0",
-                tasa: deuda.tasa || "0",
-                cuotasPendientes: deuda.cuotasPendientes || "0",
-                cuotaMensual: deuda.cuotaMensual || "0"
-              }
-            }));
-          }
-
-          // Para otros campos no complejos, los asignamos directamente
-          else {
-            cliente[key] = req.body[key]; // Actualizamos directamente el valor
+          if (!deepEqual(cliente[key], req.body[key])) {
+            cliente[key] = req.body[key];
+            cambiosRealizados = true;
           }
         }
       }
     });
 
-    // Guardamos el cliente actualizado
-    await cliente.save();
+    if (cambiosRealizados) {
+      await cliente.save();
+      return res.status(200).json({
+        message: 'Cliente actualizado exitosamente',
+        cliente: cliente
+      });
+    }
 
-    // Responder con los datos del cliente actualizado
     res.status(200).json({
-      message: 'Cliente actualizado exitosamente',
+      message: 'No hubo cambios en los datos del cliente',
       cliente: cliente
     });
+
   } catch (error) {
-    res.status(200).json({ message: 'Error al actualizar el cliente', error: error.message });
+    console.error('Error al guardar el cliente:', error);
+    res.status(500).json({ message: 'Error al actualizar el cliente', error: error.message });
   }
 };
 
