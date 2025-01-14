@@ -18,11 +18,6 @@ const actualizarCliente = async (req, res) => {
     // Buscar el cliente por la cédula que está en datosMongo
     const cliente = await ClienteFormulario.findOne({ cedula: datosMongo.cedula });
 
-    await  ClienteFormulario.updateMany(
-      { cedula: datosMongo.cedula }, // Filtro para identificar documentos específicos
-      { $unset: { DeudasLargoPlazo: "", DeudasCortoPlazo: "" } } // Eliminar ambos campos
-    );
-
     if (!cliente) {
       return res.status(404).json({ message: 'Cliente no encontrado' });
     }
