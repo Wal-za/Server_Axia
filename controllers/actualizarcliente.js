@@ -48,6 +48,7 @@ const actualizarCliente = async (req, res) => {
       return res.status(404).json({ message: 'Cliente no encontrado' });
     }
 
+    // Actualización del campo `fieldset`
     if (datosMongo.hasOwnProperty('fieldset') && cliente.fieldset !== datosMongo.fieldset) {
       cliente.fieldset = datosMongo.fieldset;
       cambiosRealizados = true;
@@ -56,6 +57,7 @@ const actualizarCliente = async (req, res) => {
       cambiosRealizados = true;
     }
 
+    // Función para actualizar deudas (comportamiento actual)
     const actualizarDeudaIndividual = (deudaAntigua, deudaNueva) => {
       if (!deepEqual(deudaAntigua, deudaNueva)) {
         for (const campo in deudaAntigua) {
@@ -72,6 +74,7 @@ const actualizarCliente = async (req, res) => {
       }
     };
 
+    // Actualización de las deudas
     if (DeudasCortoPlazo) {
       const deudaCortoPlazo = cliente.DeudasCortoPlazo || {};
       actualizarDeudaIndividual(deudaCortoPlazo, req.body.DeudasCortoPlazo);
@@ -84,6 +87,7 @@ const actualizarCliente = async (req, res) => {
       cliente.DeudasLargoPlazo = deudaLargoPlazo;
     }
 
+    // Actualización de objetivos
     if (objetivos) {
       const objetivosAntiguos = cliente.objetivos || {};
       if (!deepEqual(objetivosAntiguos, objetivos)) {
@@ -102,8 +106,9 @@ const actualizarCliente = async (req, res) => {
       }
     }
 
+    // Actualización de todos los demás campos
     Object.keys(req.body).forEach(key => {
-      if (key !== 'cedula' && key !== 'contraseña' && key !== 'datosMongo') {
+      if (key !== 'cedula' && key !== 'contraseña' && key !== 'datosMongo' && key !== 'DeudasCortoPlazo' && key !== 'DeudasLargoPlazo') {
         if (req.body[key] !== undefined && req.body[key] !== null) {
           if (!deepEqual(cliente[key], req.body[key])) {
             cliente[key] = req.body[key];
@@ -113,6 +118,7 @@ const actualizarCliente = async (req, res) => {
       }
     });
 
+    // Si hubo cambios, guardamos el cliente
     if (cambiosRealizados) {
       await cliente.save();
       return res.status(200).json({
@@ -121,6 +127,7 @@ const actualizarCliente = async (req, res) => {
       });
     }
 
+    // Si no hubo cambios
     res.status(200).json({
       message: 'No hubo cambios en los datos del cliente',
       cliente: cliente
