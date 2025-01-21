@@ -807,17 +807,25 @@ const generarExcel = async (cliente, res) => {
     // Crear la hoja "Objetivos"
     if (cliente.objetivos && Array.isArray(cliente.objetivos) && cliente.objetivos.length > 0) {
         const hojaObjetivos = workbook.addWorksheet('Objetivos');
-        let columnNumber = 1; 
+        let columnNumber = 1;
+    
         cliente.objetivos.forEach((valores) => {
-            valores.forEach((subcampoArray, subcampo) => {           
-                hojaObjetivos.getCell(1, columnNumber).value = subcampo; // Coloca el encabezado
-                let rowNumber = 2; 
-                subcampoArray.forEach((valor) => {              
-                    const numericValue = isNaN(valor) ? valor : Number(valor);               
+            // Identificar si "valores" es un Map o un objeto convencional
+            const iterable = valores instanceof Map ? Array.from(valores.entries()) : Object.entries(valores);
+    
+            iterable.forEach(([subcampo, subcampoArray]) => {
+                hojaObjetivos.getCell(1, columnNumber).value = subcampo; // Encabezado
+    
+                let rowNumber = 2;
+                // Si subcampoArray es un solo valor, conviértelo a array
+                const valuesArray = Array.isArray(subcampoArray) ? subcampoArray : [subcampoArray];
+    
+                valuesArray.forEach((valor) => {
+                    const numericValue = isNaN(valor) ? valor : Number(valor);
                     hojaObjetivos.getCell(rowNumber, columnNumber).value = numericValue;
-                    rowNumber++; 
+                    rowNumber++;
                 });
-                columnNumber++; 
+                columnNumber++;
             });
         });
     }
