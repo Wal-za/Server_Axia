@@ -87,12 +87,12 @@ const actualizarCliente = async (req, res) => {
     if (objetivos) {
       const objetivosAntiguos = cliente.objetivos || {};
 
-      // Validar que si alguno de los campos está vacío, se le asigna una cadena vacía
-      objetivos.objetivo = objetivos.objetivo || "";
-      objetivos.descripcion = objetivos.descripcion || "";
-      objetivos.plazo = objetivos.plazo || "";
-      objetivos.vrObjetivo = objetivos.vrObjetivo || "";
-      objetivos.comentarios = objetivos.comentarios || "";
+      // Validar que si alguno de los campos está vacío, se le asigna un espacio en blanco (" ")
+      objetivos.objetivo = objetivos.objetivo || " ";
+      objetivos.descripcion = objetivos.descripcion || " ";
+      objetivos.plazo = objetivos.plazo || " ";
+      objetivos.vrObjetivo = objetivos.vrObjetivo || " ";
+      objetivos.comentarios = objetivos.comentarios || " ";
 
       if (!deepEqual(objetivosAntiguos, objetivos)) {
         for (const campo in objetivosAntiguos) {
