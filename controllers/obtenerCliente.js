@@ -804,8 +804,7 @@ const generarExcel = async (cliente, res) => {
     }
 
 
-    // Crear la hoja "Objetivos"
-    console.log(cliente.objetivos)
+    // Crear la hoja "Objetivos"    
     if (cliente.objetivos && Array.isArray(cliente.objetivos) && cliente.objetivos.length > 0) {
         const hojaObjetivos = workbook.addWorksheet('Objetivos');
         let columnNumber = 1;
