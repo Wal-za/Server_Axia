@@ -86,14 +86,6 @@ const actualizarCliente = async (req, res) => {
 
     if (objetivos) {
       const objetivosAntiguos = cliente.objetivos || {};
-
-      // Validar que si alguno de los campos está vacío, se le asigna un array con un valor vacío [""] en vez de un string vacío o nulo
-      objetivos.objetivo = objetivos.objetivo ? (Array.isArray(objetivos.objetivo) ? objetivos.objetivo : [objetivos.objetivo]) : [""];
-      objetivos.descripcion = objetivos.descripcion ? (Array.isArray(objetivos.descripcion) ? objetivos.descripcion : [objetivos.descripcion]) : [""];
-      objetivos.plazo = objetivos.plazo ? (Array.isArray(objetivos.plazo) ? objetivos.plazo : [objetivos.plazo]) : [""];
-      objetivos.vrObjetivo = objetivos.vrObjetivo ? (Array.isArray(objetivos.vrObjetivo) ? objetivos.vrObjetivo : [objetivos.vrObjetivo]) : [""];
-      objetivos.comentarios = objetivos.comentarios ? (Array.isArray(objetivos.comentarios) ? objetivos.comentarios : [objetivos.comentarios]) : [""];
-
       if (!deepEqual(objetivosAntiguos, objetivos)) {
         for (const campo in objetivosAntiguos) {
           if (objetivosAntiguos.hasOwnProperty(campo)) {
