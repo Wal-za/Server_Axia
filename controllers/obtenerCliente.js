@@ -86,13 +86,16 @@ const generarExcel = async (cliente, res) => {
     }
 
     // Crear la hoja "Ingresos"
+    console.log(cliente.ingresos)
     if (cliente.ingresos && typeof cliente.ingresos === 'object' && Object.keys(cliente.ingresos).length > 0) {
         const hojaIngresos = workbook.addWorksheet('Ingresos');
+        let Arrayingresos = false;
         for (let tipoOtro in cliente.ingresos) {
             if (cliente.ingresos.hasOwnProperty(tipoOtro)) {
                 let tipoOtroModificado = tipoOtro.replace(/[-_]/g, ' ');
-                const valores = cliente.ingresos[tipoOtro];
+                const valores = cliente.ingresos[tipoOtro];                
                 if (Array.isArray(valores)) {
+                    console.log(1)
                     valores.forEach((valor, index) => {
                         if (typeof valor === 'object') {
                             for (let key in valor) {
@@ -104,7 +107,8 @@ const generarExcel = async (cliente, res) => {
                             hojaIngresos.addRow([tipoOtroModificado, Number(valor)]);
                         }
                     });
-                } else if (typeof valores === 'object') {
+                } else if (typeof valores === 'object' && Arrayingresos != true) {
+                    Arrayingresos = true
                     for (let key in cliente.ingresos) {
                         const ingresos = cliente.ingresos[key];
                         const claves = Object.keys(ingresos);
@@ -113,8 +117,7 @@ const generarExcel = async (cliente, res) => {
                         if (claves.length === valores.length) {
                             for (let i = 0; i < claves.length; i++) {                               
 
-                                if(typeof(valores[i]) === 'string'){
-                                    console.log(typeof(valores[i]))
+                                if(typeof(valores[i]) === 'string'){                                    
                                     hojaIngresos.addRow([claves[i].replace(/[-_]/g, ' '), Number(valores[i])]);
                                 }                             
 
