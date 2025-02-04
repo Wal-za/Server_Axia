@@ -688,7 +688,12 @@ const generarExcel = async (cliente, res) => {
             const valor = valores[i];     
             const clavePartes = clave.replace(/_/g, ' ').split('-');
             const numero = isNaN(Number(valor)) ? 0 : Number(valor);
-            activoLiquidos.addRow([clavePartes[0], clavePartes[1], numero]);
+            if(clavePartes[0] === "Otros"){
+                activoLiquidos.addRow([clavePartes[1], clavePartes[0], numero]); 
+            }else{
+               activoLiquidos.addRow([clavePartes[0], clavePartes[1], numero]);   
+            }
+          
         }
     }
 
@@ -698,8 +703,20 @@ const generarExcel = async (cliente, res) => {
         const clave = Object.keys(cliente.activosProductivos);
         const valor = Object.values(cliente.activosProductivos);
         for (let Index in clave) {
-            activosProductivos.addRow([clave[Index].replace(/_/g, ' ').split('-')[0], clave[Index].replace(/_/g, ' ').split('-')[1], Number(valor[Index])]);
-        }
+            if (clave[Index].replace(/_/g, ' ').split('-')[0] === "Otros") {
+                activosProductivos.addRow([
+                    clave[Index].replace(/_/g, ' ').split('-')[1],
+                    clave[Index].replace(/_/g, ' ').split('-')[0],
+                    Number(valor[Index])
+                ]);
+            } else {
+                activosProductivos.addRow([
+                    clave[Index].replace(/_/g, ' ').split('-')[0],
+                    clave[Index].replace(/_/g, ' ').split('-')[1],
+                    Number(valor[Index])
+                ]);
+            }
+                    }
     }
 
     // Crear la hoja "activosImproductivos"
@@ -709,7 +726,11 @@ const generarExcel = async (cliente, res) => {
         const valores = Object.values(cliente.activosImproductivos);
         for (let Index in claves) {
             const [antesDelGuion, despuesDelGuion] = claves[Index].replace(/_/g, ' ').split('-');
-            activosImproductivos.addRow([antesDelGuion, despuesDelGuion, Number(valores[Index])]);
+            if (antesDelGuion === "Otros") {
+                activosImproductivos.addRow([despuesDelGuion, antesDelGuion, Number(valores[Index])]);
+            } else {
+                activosImproductivos.addRow([antesDelGuion, despuesDelGuion, Number(valores[Index])]);
+            }
         }
     }
    
