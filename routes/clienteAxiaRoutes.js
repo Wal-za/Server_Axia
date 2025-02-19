@@ -6,9 +6,11 @@ const obtenerCliente = require('../controllers/obtenerCliente');
 const login = require('../controllers/login'); // Importar el controlador de login
 const  actualizarCliente  = require('../controllers/actualizarcliente');
 const  obtenerFieldset  = require('../controllers/fieldset');
+const  getAllClientes  = require('../controllers/GetAllClientes');
 
 // Ruta para crear un nuevo cliente
 router.post('/clientes', crearCliente);
+router.get('/clientes', getAllClientes);
 
 // Ruta para obtener los datos de un cliente por su ID
 router.get('/clientes/:cedula', obtenerCliente);
