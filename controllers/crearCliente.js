@@ -5,7 +5,8 @@ const bcrypt = require('bcryptjs'); // Importamos bcrypt para encriptar la contr
 const crearCliente = async (req, res) => {
   try {
     const {
-      fecha, // Esto debería ser generado automáticamente como la fecha de creación
+      asesor,
+      fecha, 
       sexo,
       nombre,
       apellidos,
@@ -51,7 +52,8 @@ const crearCliente = async (req, res) => {
 
     // Crear una nueva instancia de ClienteFormulario con la contraseña encriptada
     const nuevoCliente = new ClienteFormulario({
-      fecha: fecha || new Date(), // Si no se proporciona una fecha, usa la fecha actual
+      fecha: fecha || new Date(), 
+      asesor,
       sexo,
       nombre,
       apellidos,

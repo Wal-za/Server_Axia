@@ -3,6 +3,7 @@ const { Schema, model } = require('mongoose');
 // Esquema para ClienteAxias
 const ClienteAxiasSchema = new Schema({
   // Datos generales
+  asesor: { type: String, required: true },
   fecha: { type: Date, default: Date.now, required: true },
   sexo: { type: String, required: true },
   nombre: { type: String, required: true },
