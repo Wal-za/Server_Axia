@@ -32,7 +32,7 @@ const exportarClientesExcel = async (req, res) => {
             { header: 'Correo Electrónico', key: 'correoElectronico', width: 25 },
             { header: 'Edad', key: 'edad', width: 10 },
             { header: 'Empresa', key: 'empresa', width: 20 },
-            { header: 'Fondo de pensiones', key: 'seguridadsocial.AFP', width: 20 },
+            { header: 'Fondo de pensiones', key: 'seguridadsocialAFP', width: 20 },
             { header: 'Ingresos Mensuales', key: 'ingresos', width: 20 },
             { header: 'Asesor', key: 'asesor', width: 20 },
         ];
@@ -95,8 +95,8 @@ const exportarClientesExcel = async (req, res) => {
                 correoElectronico: cliente.correoElectronico || '',
                 edad: cliente.edad || '',
                 empresa: cliente.empresa || '',
-                'seguridadsocial.AFP': fondoPensiones,
-                ingresos: formatCurrency(ingresosTotal),
+                seguridadsocialAFP: cliente.seguridadsocial|| '',
+                ingresos: formatCurrency(ingresosTotal)|| '',
                 asesor: cliente.asesor || '',
             });
         });
