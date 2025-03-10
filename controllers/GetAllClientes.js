@@ -95,7 +95,7 @@ const exportarClientesExcel = async (req, res) => {
                 correoElectronico: cliente.correoElectronico || '',
                 edad: cliente.edad || '',
                 empresa: cliente.empresa || '',
-                seguridadsocialAFP: cliente.seguridadsocial|| '',
+                seguridadsocialAFP: cliente.seguridadsocial.AFP|| '',
                 ingresos: formatCurrency(ingresosTotal)|| '',
                 asesor: cliente.asesor || '',
             });
