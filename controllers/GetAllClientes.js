@@ -95,11 +95,12 @@ const exportarClientesExcel = async (req, res) => {
                 correoElectronico: cliente.correoElectronico || '',
                 edad: cliente.edad || '',
                 empresa: cliente.empresa || '',
-                'seguridadsocial.AFP': fondoPensiones,
+                seguridadsocialAFP: fondoPensiones,
                 ingresos: formatCurrency(ingresosTotal)|| '',
                 asesor: cliente.asesor || '',
             });
         });
+
 
         // Escribir el archivo en memoria
         const buffer = await workbook.xlsx.writeBuffer();
