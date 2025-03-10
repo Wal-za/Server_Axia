@@ -15,7 +15,7 @@ const exportarClientesExcel = async (req, res) => {
             empresa: 1,
             seguridadsocial: 1,  
             ingresos: 1,      
-            //asesor       
+            asesor:1,      
             _id: 0
         });
 
