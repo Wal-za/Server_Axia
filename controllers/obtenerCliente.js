@@ -78,11 +78,11 @@ const generarExcel = async (cliente, res) => {
     if (cliente.seguridadsocial) {
         const hojaSeguridadSocial = workbook.addWorksheet('Seguridad Social');
         hojaSeguridadSocial.addRow(['Eps', cliente.seguridadsocial?.EPS || '']);
-        hojaSeguridadSocial.addRow(['Arl', cliente.seguridadsocial?.ARL || '']);
-        hojaSeguridadSocial.addRow(['Fondo_cesantias', cliente.seguridadsocial?.Fondo_Cesantias || '']);
-        hojaSeguridadSocial.addRow(['Afp', cliente.seguridadsocial?.AFP || '']);
-        hojaSeguridadSocial.addRow(['', '']);
         hojaSeguridadSocial.addRow(['Medicina_prepagada', cliente.seguridadsocial?.Medicina_Prepagada || '']);
+        hojaSeguridadSocial.addRow(['Arl', cliente.seguridadsocial?.ARL || '']);
+        hojaSeguridadSocial.addRow(['Fondo_cesantias', cliente.seguridadsocial?.Fondo_Cesantias || '']);        
+        hojaSeguridadSocial.addRow(['', '']);
+        hojaSeguridadSocial.addRow(['Afp', cliente.seguridadsocial?.AFP || '']);
     }
 
     // Crear la hoja "Ingresos"
@@ -698,6 +698,7 @@ const generarExcel = async (cliente, res) => {
     }
 
     // Crear la hoja "activosProductivos"
+    console.log(cliente.activosProductivos)
     if (cliente.activosProductivos && typeof cliente.activosProductivos === 'object' && Object.keys(cliente.activosProductivos).length > 0) {
         const activosProductivos = workbook.addWorksheet('activos Productivos');
         const clave = Object.keys(cliente.activosProductivos);
