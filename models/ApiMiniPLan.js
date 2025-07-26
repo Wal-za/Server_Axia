@@ -3,6 +3,8 @@ const { Schema, model } = require('mongoose');
 const MiniPlanSchema = new Schema({
   recomendadoPor: { type: String },
   nombre: { type: String },
+  email: { type: String },
+  celular: { type: String },
   nacimiento: { type: Date },
   empresa: { type: String },
   cargo: { type: String },
