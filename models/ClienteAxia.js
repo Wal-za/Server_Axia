@@ -19,7 +19,7 @@ const ClienteAxiasSchema = new Schema({
   telefonoOficina: { type: String, required: false },
   empresa: { type: String, required: false },
   cargo: { type: String, required: false },
-  fechaIngreso: { type: Date, required: false },
+ fechaIngreso: { type: Date, default: null },
   tipoContratacion: { type: String, required: false },
   profesion: { type: String, required: false },
   universidad: { type: String, required: false },

@@ -1,12 +1,11 @@
-const ClienteFormulario = require('../models/ClienteAxia'); // Asegúrate de poner la ruta correcta
-const bcrypt = require('bcryptjs'); // Importamos bcrypt para encriptar la contraseña
+const ClienteFormulario = require('../models/ClienteAxia'); 
+const bcrypt = require('bcryptjs');
 
-// Controlador para crear un nuevo cliente
 const crearCliente = async (req, res) => {
   try {
     const {
       asesor,
-      fecha, 
+      fecha,
       sexo,
       nombre,
       apellidos,
@@ -28,8 +27,8 @@ const crearCliente = async (req, res) => {
       correoElectronico,
       declaranteRenta,
       estadoCivil,
-      contraseña // Recibimos la contraseña en el cuerpo de la solicitud
-    } = req.body; // Obtén los datos del cuerpo de la solicitud
+      contraseña
+    } = req.body;
 
     // Verificar si ya existe un cliente con la misma cédula
     const clienteExistente = await ClienteFormulario.findOne({ cedula });
@@ -43,16 +42,24 @@ const crearCliente = async (req, res) => {
       return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
     }
 
-    // Asegurarse de que las fechas sean objetos Date, si vienen como cadena
-    const fechaNacimientoDate = new Date(fechaNacimiento);
-    const fechaIngresoDate = new Date(fechaIngreso);
+    // Validar y asignar fecha de nacimiento (null si inválida)
+    let fechaNacimientoDate = new Date(fechaNacimiento);
+    if (!fechaNacimiento || isNaN(fechaNacimientoDate.getTime())) {
+      fechaNacimientoDate = null;
+    }
+
+    // Validar y asignar fecha de ingreso (null si inválida)
+    let fechaIngresoDate = new Date(fechaIngreso);
+    if (!fechaIngreso || isNaN(fechaIngresoDate.getTime())) {
+      fechaIngresoDate = null;
+    }
 
     // Encriptar la contraseña antes de guardarla
     const contraseñaEncriptada = await bcrypt.hash(contraseña, 10);
 
-    // Crear una nueva instancia de ClienteFormulario con la contraseña encriptada
+    // Crear nueva instancia del cliente
     const nuevoCliente = new ClienteFormulario({
-      fecha: fecha || new Date(), 
+      fecha: fecha || new Date(), // Si no viene, usar fecha actual
       asesor,
       sexo,
       nombre,
@@ -75,17 +82,24 @@ const crearCliente = async (req, res) => {
       correoElectronico,
       declaranteRenta,
       estadoCivil,
-      contraseña: contraseñaEncriptada // Guardar la contraseña encriptada
+      contraseña: contraseñaEncriptada
     });
 
-    // Guardar el cliente en la base de datos
+    // Guardar en la base de datos
     await nuevoCliente.save();
 
-    // Enviar una respuesta exitosa, pero solo con la cédula
-    res.status(201).json({ message: 'Cliente creado con éxito', cedula: nuevoCliente.cedula });
+    // Respuesta exitosa
+    res.status(201).json({
+      message: 'Cliente creado con éxito',
+      cedula: nuevoCliente.cedula
+    });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Error al crear el cliente', error: error.message });
+    console.error('Error al crear cliente:', error);
+    res.status(500).json({
+      message: 'Error al crear el cliente',
+      error: error.message
+    });
   }
 };
 
