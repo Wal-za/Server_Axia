@@ -1,192 +1,1286 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const {
+    createCanvas
+} = require('canvas');
+const ChartDataLabels = require('chartjs-plugin-datalabels');
+const {
+    Chart,
+    registerables
+} = require('chart.js');
+Chart.register(...registerables);
 const MiniPlan = require('../models/ApiMiniPLan');
 
 const normalizarSegunEsquema = (data, schema) => {
-  if (!schema || !schema.paths) {
-    throw new Error('El esquema no está definido o no tiene paths');
-  }
-
-  const result = {};
-  for (const key in schema.paths) {
-    if (key === '_id' || key === '__v') continue;
-    const tipo = schema.paths[key].instance;
-    let valor = data[key];
-
-    if (valor === undefined || valor === null || valor === '') {
-      if (tipo === 'Number') valor = 0;
-      else if (tipo === 'Boolean') valor = false;
-      else valor = '';
-    } else {
-      switch (tipo) {
-        case 'Number':
-          valor = parseFloat(valor);
-          if (isNaN(valor)) valor = 0;
-          break;
-        case 'Boolean':
-          if (typeof valor === 'string') {
-            const valStr = valor.toLowerCase().trim();
-            valor = ['true', 'sí', 'si', 'yes'].includes(valStr);
-          } else {
-            valor = Boolean(valor);
-          }
-          break;
-        case 'String':
-          valor = String(valor);
-          break;
-      }
+    if (!schema || !schema.paths) {
+        throw new Error('El esquema no está definido o no tiene paths');
     }
 
-    result[key] = valor;
-  }
-  return result;
-};
 
-const calcularResumenFinanciero = (form) => {
-  const resumen = [];
 
-  const ingresoTotal = (form.ingresoNetoMensual || 0) + (form.ingresoTrimestral || 0) + (form.ingresosAdicionales || 0);
-  const ingresosAnuales = (form.bonificacionesAnuales || 0) + (form.primaAnual || 0);
-  const totalDeudasMensuales = form.totalDeudasMensuales || 0;
-  const deudaTotal = form.deuda || 0;
-  const patrimonio = form.patrimonio || 0;
+    const result = {};
+    for (const key in schema.paths) {
+        if (key === '_id' || key === '__v') continue;
+        const tipo = schema.paths[key].instance;
+        let valor = data[key];
 
-  const ratioDeudaIngresos = ingresoTotal > 0 ? totalDeudasMensuales / ingresoTotal : 0;
-  const ratioPasivoActivo = patrimonio > 0 ? deudaTotal / patrimonio : 0;
+        if (valor === undefined || valor === null || valor === '') {
+            if (tipo === 'Number') valor = 0;
+            else if (tipo === 'Boolean') valor = false;
+            else valor = '';
+        } else {
+            switch (tipo) {
+                case 'Number':
+                    valor = parseFloat(valor);
+                    if (isNaN(valor)) valor = 0;
+                    break;
+                case 'Boolean':
+                    if (typeof valor === 'string') {
+                        const valStr = valor.toLowerCase().trim();
+                        valor = ['true', 'sí', 'si', 'yes'].includes(valStr);
+                    } else {
+                        valor = Boolean(valor);
+                    }
+                    break;
+                case 'String':
+                    valor = String(valor);
+                    break;
+            }
+        }
 
-  if (ingresosAnuales > 0) {
-    resumen.push("Tus ingresos anuales podrían ser utilizados para cubrir gastos extraordinarios como impuestos, vacaciones o compras.");
-  } else {
-    resumen.push("Como no tienes ingresos anuales extras, deberías planificar cómo cubrir esos gastos importantes.");
-  }
-
-  if (ratioDeudaIngresos === 0) {
-    resumen.push("No tienes endeudamiento mensual, excelente para tu salud financiera.");
-  } else if (ratioDeudaIngresos <= 0.3) {
-    resumen.push("Tu nivel de deuda mensual es bajo, lo cual es bueno.");
-  } else {
-    resumen.push("Tienes un nivel alto de endeudamiento mensual, considera reducirlo.");
-  }
-
-  if (form.planB === '' || form.planB === '0') {
-    resumen.push("No cuentas con un plan B para tu pensión, lo cual puede afectar tu futuro.");
-  } else {
-    resumen.push("Revisa si el ahorro para pensión es suficiente para mantener tu estilo de vida.");
-  }
-
-  if (form.seguroVida === 'No') {
-    if (form.tieneHijosDependientes === 'Sí') {
-      resumen.push("No tener seguro de vida teniendo hijos puede afectar su estabilidad.");
-    } else {
-      resumen.push("Aunque no tengas dependientes, considera el seguro de vida como estrategia financiera.");
+        result[key] = valor;
     }
-  }
-
-  if (form.seguroIncapacidad === 'No') {
-    resumen.push("No tener seguro de incapacidad te deja vulnerable ante imprevistos laborales.");
-  }
-
-  if (form.polizaSalud === 'No') {
-    resumen.push("Depender solo del sistema obligatorio puede ser insuficiente en emergencias.");
-  }
-
-  if (form.fondoEmergencia === 'No') {
-    resumen.push("No contar con fondo de emergencia puede afectar tu estabilidad en imprevistos.");
-  }
-
-  if (ratioPasivoActivo > 0.5) {
-    resumen.push("Tienes un nivel elevado de endeudamiento general.");
-  } else if (ratioPasivoActivo >= 0.3) {
-    resumen.push("Tu nivel de endeudamiento es aceptable.");
-  } else {
-    resumen.push("Tu nivel de endeudamiento es adecuado.");
-  }
-
-  return resumen;
+    return result;
 };
 
 const procesarMiniPlan = async (req, res) => {
-  try {
-    const datos = req.body;
 
-    console.log(datos)
-
-    if (!datos || Object.keys(datos).length === 0 || Object.values(datos).every(v => v === '' || v === null || v === undefined)) {
-      return res.status(400).json({ error: 'Por favor, complete el formulario antes de enviarlo.' });
-    }
-
-    const datosNormalizados = normalizarSegunEsquema(datos, MiniPlan.schema);
-    const nuevoMiniPlan = new MiniPlan(datosNormalizados);
-    await nuevoMiniPlan.save();
-
-    const datosPlan = nuevoMiniPlan.toObject();
-    const resumen = calcularResumenFinanciero(datosPlan);
-
-    const doc = new PDFDocument({ margin: 50 });
-    const buffers = [];
-
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', () => {
-      const pdfData = Buffer.concat(buffers);
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'inline; filename="resumen_financiero.pdf"',
-        'Content-Length': pdfData.length
-      });
-      res.send(pdfData);
-    });
-
-    // LOGO SIMULADO
+    const Blue = "#3c6a9b";
     try {
-      const logoPath = path.join(__dirname, '../assets/logo.png'); // reemplaza con tu ruta real
-      if (fs.existsSync(logoPath)) doc.image(logoPath, { fit: [100, 100], align: 'center' });
-    } catch (e) { }
+        const datos = req.body;
 
-    doc.moveDown();
-    doc.fontSize(20).font('Helvetica-Bold').text('PLAN FINANCIERO PERSONALIZADO', { align: 'center' });
-    doc.moveDown();   
+        if (
+            !datos ||
+            Object.keys(datos).length === 0 ||
+            Object.values(datos).every(v => v === '' || v === null || v === undefined)
+        ) {
+            return res.status(400).json({
+                error: 'Por favor, complete el formulario antes de enviarlo.'
+            });
+        }
 
-    doc.fontSize(12).font('Helvetica').text(`Nombre: ${datosPlan.nombre}`);
-    doc.fontSize(12).font('Helvetica').text(`Nombre: ${datosPlan.nombre || '---'}`);
-    doc.text(`Cargo: ${datosPlan.cargo || '---'}`);
-    doc.text(`Empresa: ${datosPlan.empresa || '---'}`);
-    doc.text(`Email: ${datos.email || datos.Email || datosPlan.email || '---'}`);
-    doc.text(`Celular: ${datosPlan.celular || '---'}`);
-    doc.moveDown();
+        //comentar en pruebas 
+        // const datosNormalizados = normalizarSegunEsquema(datos, MiniPlan.schema);
+        //const nuevoMiniPlan = new MiniPlan(datosNormalizados);
+        //await nuevoMiniPlan.save();
 
-    doc.fontSize(14).font('Helvetica-Bold').text('OBJETIVOS DE VIDA', { underline: true });
-    (datosPlan.objetivos || []).forEach(obj => doc.font('Helvetica').text(`• ${obj}`));
-    doc.moveDown();
+        //const datosPlan = nuevoMiniPlan.toObject();
 
-    doc.fontSize(14).font('Helvetica-Bold').text('LIBERTAD FINANCIERA', { underline: true });
-    doc.fontSize(12).font('Helvetica').text('5.000.000 x 12 = $1.000.000.000');
-    doc.text('Este es el total del monto ($1.000.000.000) que deberías ahorrar para lograr tu libertad financiera.');
-    doc.text('Sabemos que armando un portafolio de inversiones ganador, lo lograrás.');
-    doc.moveDown();
 
-    doc.fontSize(14).font('Helvetica-Bold').text('ANÁLISIS FINANCIERO', { underline: true });
-    resumen.forEach(linea => {
-      const color = linea.includes('No') || linea.includes('alto') ? 'red' : linea.includes('bajo') ? 'green' : 'black';
-      doc.fillColor(color).fontSize(12).font('Helvetica').text(`• ${linea}`);
-    });
-    doc.fillColor('black');
-    doc.moveDown();
+        const datosPlan = normalizarSegunEsquema(datos, MiniPlan.schema);
 
-    doc.fontSize(14).font('Helvetica-Bold').text('REFLEXIÓN FINAL', { underline: true });
-    doc.fontSize(12).font('Helvetica-Oblique').text('“Cada decisión que tomes terminará llevándote a donde quieras llegar o alejándote de tus propósitos de vida.”', {
-      align: 'center'
-    });
-    doc.moveDown();
+        const gastosMensuales =
+            (datosPlan.gastosHogar || 0) +
+            (datosPlan.totalDeudasMensuales || 0) +
+            (datosPlan.transporte || 0) +
+            (datosPlan.cuidadoPersonal || 0) +
+            (datosPlan.comidaOficina || 0) +
+            (datosPlan.entretenimiento || 0) +
+            (datosPlan.segurosMensuales || 0) +
+            (datosPlan.cursos || 0) +
+            (datosPlan.hijos || 0) +
+            (datosPlan.otrosGastosMensuales || 0);
 
-    doc.fontSize(12).font('Helvetica-Bold').text('Axia Finanzas');
-    doc.font('Helvetica').text('Contáctanos para tomar decisiones que apunten a tu libertad financiera.');
-    doc.end();
+        const formulaLibertad = (gastosMensuales * 12) / 0.06;
 
-  } catch (error) {
-    console.error('❌ Error al procesar MiniPlan:', error);
-    res.status(500).json({ error: error.message || 'Error al procesar el formulario' });
-  }
+        const doc = new PDFDocument({
+            margin: 0,
+            size: 'A4'
+        });
+        const buffers = [];
+
+        doc.on('data', buffers.push.bind(buffers));
+        doc.on('end', () => {
+            const pdfData = Buffer.concat(buffers);
+            res.set({
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': 'inline; filename="pagina1.pdf"',
+                'Content-Length': pdfData.length,
+            });
+            res.send(pdfData);
+        });
+
+
+        const fondoPath = path.join(__dirname, 'assets', 'Axia_PPT.png');
+        if (fs.existsSync(fondoPath)) {
+            doc.image(fondoPath, 0, 0, {
+                fit: [doc.page.width, doc.page.height]
+            });
+        }
+
+
+        // OPCIÓN DEBUG: Cuadrícula        
+        const DEBUG_GRID = false;
+        if (DEBUG_GRID) {
+            doc.lineWidth(0.5).fontSize(6).fillColor('gray');
+            const pageWidth = doc.page.width;
+            const pageHeight = doc.page.height;
+
+            const STEP = 10; // cada 10 puntos
+            for (let x = 0; x <= pageWidth; x += STEP) {
+                doc.moveTo(x, 0).lineTo(x, pageHeight).strokeColor('#e0e0e0').stroke();
+                if (x % 50 === 0) doc.text(x, x + 2, 10);
+            }
+            for (let y = 0; y <= pageHeight; y += STEP) {
+                doc.moveTo(0, y).lineTo(pageWidth, y).strokeColor('#e0e0e0').stroke();
+                if (y % 50 === 0) doc.text(y, 2, y + 2);
+            }
+        }
+
+        const DEBUG_AREAS = false;
+
+        const pageWidth = doc.page.width;
+        const pageHeight = doc.page.height;
+
+        const LEFT = {
+            x: 0,
+            y: 400,
+            width: pageWidth / 2,
+            height: 200
+        };
+        const RIGHT = {
+            x: pageWidth / 2,
+            y: 400,
+            width: pageWidth / 2,
+            height: 200
+        };
+
+        if (DEBUG_AREAS) {
+            doc.rect(LEFT.x, LEFT.y, LEFT.width, LEFT.height).stroke('red'); // área izquierda
+            doc.rect(RIGHT.x, RIGHT.y, RIGHT.width, RIGHT.height).stroke('blue'); // área derecha
+        }
+
+        const titulo = 'Objetivos de vida';
+        doc.font('Helvetica-Bold').fontSize(20).fillColor(Blue);
+        const tituloW = doc.widthOfString(titulo);
+        const tituloH = doc.currentLineHeight();
+        const tituloX = LEFT.x + (LEFT.width - tituloW) / 2;
+        const tituloY = LEFT.y + (LEFT.height - tituloH) / 2;
+        doc.text(titulo, tituloX, tituloY);
+
+        doc.font('Helvetica').fontSize(12).fillColor('black');
+
+        const lista = datosPlan.objetivos || [];
+        const lineHeight = 18;
+        const totalAlturaLista = lista.length * lineHeight;
+        let startY = RIGHT.y + (RIGHT.height - totalAlturaLista) / 2;
+
+        lista.forEach((obj) => {
+            doc.text(`• ${obj}`, RIGHT.x + 20, startY, {
+                width: RIGHT.width - 50
+            });
+            startY += lineHeight;
+        });
+
+
+
+        const label = 'Proyección de retiro';
+        const labelFontSize = 30;
+
+        const boxX = 0;
+        const boxY = 590;
+        const boxHeight = 40;
+
+        doc.font('Helvetica-Bold').fontSize(labelFontSize);
+
+        doc.rect(boxX, boxY, doc.page.width, boxHeight).fill(Blue);
+
+        doc.fillColor('white')
+            .text(label, boxX, boxY + (boxHeight - doc.currentLineHeight()) / 2, {
+                width: doc.page.width,
+                align: 'center'
+            });
+
+
+        const label3 = 'Fórmula de la libertad financiera';
+        const label3FontSize = 20;
+        const box3X = 130;
+        const box3Y = 660;
+        const box3PaddingX = 12;
+        const box3PaddingY = 6;
+
+        doc.font('Helvetica-Bold').fontSize(label3FontSize);
+        const text3Width = doc.widthOfString(label3);
+        const text3Height = doc.currentLineHeight();
+
+        doc.font('Helvetica-Bold')
+            .fontSize(label3FontSize)
+            .fillColor(Blue)
+            .text(label3, box3X + box3PaddingX, box3Y + box3PaddingY);
+
+
+        doc.fontSize(20).fillColor('black');
+
+
+        doc.text(`(Gastos totales mensuales * 12) / 6% = Valor`, 100, 720, {
+            width: 450
+        });
+
+        doc.text(
+            `(${gastosMensuales.toLocaleString('es-CO')} * 12) / 6% = ${formulaLibertad.toLocaleString('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  })}`,
+            100,
+            760, {
+                width: 400
+            }
+        );
+
+
+
+        // PAGINA 2 
+        doc.addPage();
+
+
+        if (DEBUG_GRID) {
+            doc.lineWidth(0.5).fontSize(6).fillColor('gray');
+            const pageWidth = doc.page.width;
+            const pageHeight = doc.page.height;
+
+            const STEP = 10;
+            for (let x = 0; x <= pageWidth; x += STEP) {
+                doc.moveTo(x, 0).lineTo(x, pageHeight).strokeColor('#e0e0e0').stroke();
+                if (x % 50 === 0) doc.text(x, x + 2, 10);
+            }
+            for (let y = 0; y <= pageHeight; y += STEP) {
+                doc.moveTo(0, y).lineTo(pageWidth, y).strokeColor('#e0e0e0').stroke();
+                if (y % 50 === 0) doc.text(y, 2, y + 2);
+            }
+        }
+
+        const monto = formulaLibertad.toLocaleString('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            maximumFractionDigits: 0,
+        });
+
+        const mensaje = `Este es el total del monto (${monto}) que deberías ahorrar para lograr tu libertad financiera.
+Ánimo, tal vez la meta sea alta, pero sabemos que armando un portafolio de inversiones ganador lo lograrás.`;
+
+
+        doc.font('Helvetica')
+            .fontSize(12)
+            .fillColor('black')
+            .text(mensaje, 50, 50, {
+                width: 500,
+                align: 'left'
+            });
+
+
+        doc.font('Helvetica-Bold')
+            .fontSize(10)
+            .fillColor('white');
+
+        const baseX = 50;
+        const baseY = 130;
+        const tableWidth = 200;
+        const col1 = baseX + 150;
+        const col2 = baseX + tableWidth - 10;
+
+
+        const ingresoNeto = datosPlan.ingresoNetoMensual || 0;
+
+        const gastos = [{
+                label: 'Transporte',
+                value: datosPlan.transporte
+            },
+            {
+                label: 'Gastos Personales',
+                value: datosPlan.cuidadoPersonal
+            },
+            {
+                label: 'Hogar',
+                value: datosPlan.gastosHogar
+            },
+            {
+                label: 'Entretenimiento',
+                value: datosPlan.entretenimiento
+            },
+            {
+                label: 'Protecciones Personales',
+                value: datosPlan.segurosMensuales
+            },
+            {
+                label: 'Otros Descuentos de Nómina',
+                value: datosPlan.totalDeudasMensuales
+            },
+            {
+                label: 'Educación o gastos hijos',
+                value: datosPlan.hijos
+            },
+            {
+                label: 'Servicio a la deuda',
+                value: datosPlan.deuda
+            },
+            {
+                label: 'Otros',
+                value: datosPlan.otrosGastosMensuales
+            }
+        ];
+
+        let totalGastos = 0;
+
+        gastos.forEach(g => {
+            const value = g.value || 0;
+            totalGastos += value;
+        });
+
+        const ratioDeudaIngresos = ingresoNeto > 0 ? totalGastos / ingresoNeto : 0;
+
+        let comentario = "";
+
+        if (ratioDeudaIngresos === 0) {
+            comentario = `No cuentas con endeudamiento, lo cual es favorable, ten presente invertir para lograr tus objetivos.`;
+        } else if (ratioDeudaIngresos <= 0.3) {
+            comentario = `Cuentas con un porcentaje bajo de endeudamiento, lo cual es aceptable.`;
+        } else {
+            comentario = `Cuentas con un porcentaje alto de endeudamiento, vale la pena que revises cómo bajar el porcentaje que estás destinando a tus deudas.`;
+        }
+
+
+        doc.fillColor('white').fontSize(10);
+
+        doc.rect(baseX + 1, baseY + 38, 600, 290).fill("white");
+
+        const cuadroAncho = 280;
+        const cuadroAlto = 290;
+        const basePosX = baseX + 271;
+        const basePosY = baseY + 39;
+
+
+
+        doc
+            .save()
+
+            .fillColor(Blue)
+            .rect(basePosX, basePosY - 1, cuadroAncho, cuadroAlto)
+            .fill()
+
+
+            .strokeColor('gray')
+            .lineWidth(1)
+            .rect(basePosX, basePosY - 1, cuadroAncho + 20, cuadroAlto + 1)
+            .stroke()
+
+            .restore();
+
+
+        doc
+            .fillColor('white')
+            .fontSize(15)
+            .text(comentario, basePosX + 10, basePosY + 50, {
+                width: cuadroAncho - 20,
+            });
+
+
+
+
+        let currentY = baseY;
+        const rectWidth = tableWidth + 20;
+        const rectHeight = 25;
+        const text = 'Presupuesto:';
+
+        doc.rect(baseX, currentY, rectWidth, rectHeight).fill(Blue);
+        doc.fillColor('white');
+
+        doc.font('Helvetica-Bold').fontSize(14).text(
+            text,
+            baseX,
+            currentY + (rectHeight / 2) - 7, {
+                width: rectWidth,
+                align: 'center'
+            }
+        );
+
+
+        currentY += 40;
+
+        doc.fontSize(10).fillColor('#333333');
+
+        doc.font('Helvetica-Bold').fillColor("black").text('INGRESOS', baseX + 5, currentY + 5);
+
+        let rowHeight = 18;
+        doc.font('Helvetica-Bold').fillColor("black").text('Ingresos mensuales', col1 + 20, currentY + 5);
+
+
+        doc.lineWidth(0.8);
+        doc.strokeColor('#cccccc');
+        doc.rect(baseX, currentY - 2, col2 - baseX + 80, rowHeight).stroke();
+
+
+
+        currentY += rowHeight;
+        doc.font('Helvetica-Bold').fillColor("black").text('TOTAL INGRESOS MENSUALES', baseX + 5, currentY + 5);
+        doc.fillColor('red').text(
+            ingresoNeto.toLocaleString('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                maximumFractionDigits: 0
+            }),
+            col2, currentY + 5
+        );
+        doc.rect(baseX, currentY - 2, col2 - baseX + 80, rowHeight).stroke();
+
+        currentY += 40;
+        doc.font('Helvetica-Bold').fillColor("black").text('GASTOS', baseX + 5, currentY);
+        currentY += rowHeight;
+
+
+
+        gastos.forEach(g => {
+            const value = g.value || 0;
+
+            doc.font('Helvetica').fillColor("black").text(`${g.label}:`, baseX + 5, currentY + 5);
+            doc.fillColor('#000000').text(
+                value.toLocaleString('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    maximumFractionDigits: 0
+                }),
+                col2, currentY + 5
+            );
+
+            doc.strokeColor('#e0e0e0').rect(baseX, currentY - 2, col2 - baseX + 80, rowHeight).stroke();
+
+
+            currentY += rowHeight;
+        });
+
+        doc.font('Helvetica-Bold').fillColor("black").text('TOTAL GASTOS', baseX + 5, currentY + 5);
+        doc.fillColor('#000000').text(
+            totalGastos.toLocaleString('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                maximumFractionDigits: 0
+            }),
+            col2, currentY + 5
+        );
+        doc.strokeColor('#cccccc').rect(baseX, currentY - 2, col2 - baseX + 80, rowHeight).stroke();
+
+        currentY += 30;
+
+        doc.rect(baseX + 1, currentY, tableWidth + 69, 20).fill('#ff9900');
+        doc.font('Helvetica-Bold').fillColor("black").text('INGRESOS - GASTOS:', baseX + 5, currentY + 5);
+        doc.fillColor('#000000')
+            .font('Helvetica-Bold')
+            .text(
+                ` ${(ingresoNeto - totalGastos).toLocaleString('es-CO',{style:'currency',currency:'COP', maximumFractionDigits: 0})}`,
+                col2,
+                currentY + 5
+            );
+
+
+
+        const baseX2 = 50;
+        const baseY2 = 500;
+        const tableWidth2 = 250;
+        const col1_2 = baseX2 + 150;
+        const col2_2 = baseX2 + tableWidth2 - 10;
+        const color = "#efb85a";
+
+        // Título de "Presupuesto"
+        let currentY2 = baseY2;
+        const rectWidth2 = tableWidth2 + 20;
+        const rectHeight2 = 25;
+        const text2 = 'Distribución de gastos mensuales';
+
+        // Cuadro de la tabla con solo el título
+        doc.rect(baseX2, currentY2, rectWidth2, rectHeight2).fill(color);
+
+        doc.font('Helvetica-Bold').fontSize(14).fillColor('white').text(
+            text2,
+            baseX2,
+            currentY2 + (rectHeight2 / 2) - 7, {
+                width: rectWidth2,
+                align: 'center'
+            }
+        );
+
+        doc.fontSize(10);
+        doc.rect(baseX2 + 1, baseY2 + 38, 270, 290).fill("white");
+
+        const total = gastos.reduce((acc, item) => acc + item.value, 0);
+
+        const colors = [
+            '#FF0000',
+            '#00FF00',
+            '#0000FF',
+            '#FFFF00',
+            '#FF00FF',
+            '#00FFFF',
+            '#FFA500',
+            '#800080',
+            '#FFD700',
+            '#008080'
+        ];
+
+        // Asegurarnos de que haya suficientes colores para los datos
+        const usedColors = colors.slice(0, gastos.length);
+
+        // Crear el lienzo en memoria
+        const canvas = createCanvas(400, 400);
+        const ctx = canvas.getContext('2d');
+
+        // Configuración de los datos del gráfico
+        const data = {
+            labels: gastos.map(gasto => gasto.label),
+            datasets: [{
+                data: gastos.map(gasto => gasto.value),
+                backgroundColor: usedColors,
+                hoverBackgroundColor: usedColors.map(color => `${color}80`),
+            }],
+        };
+
+        const options = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            color: 'black'
+                        }
+                    }
+
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return `${tooltipItem.label}: ${tooltipItem.raw} (${((tooltipItem.raw / total) * 100).toFixed(2)}%)`;
+                        }
+                    }
+                },
+
+                datalabels: {
+                    formatter: function(value, ctx) {
+                        const percentage = ((value / total) * 100).toFixed(2) + '%';
+                        return percentage;
+                    },
+                    color: 'black',
+                    font: {
+                        weight: 'bold',
+                        size: 12
+                    },
+                    anchor: 'end',
+                    align: 'start',
+                    offset: 0,
+                    borderRadius: 4,
+                    textAlign: 'center',
+                }
+            }
+        };
+
+        // Crear el gráfico de torta
+        new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: options,
+            plugins: [ChartDataLabels],
+        });
+
+        const buffer = canvas.toBuffer('image/png');
+        doc.image(buffer, baseX2, baseY2 + 40, {
+            fit: [250, 250],
+            align: 'center',
+            valign: 'center',
+        });
+
+
+
+        const cuadroAncho2 = 280;
+        const cuadroAlto2 = 290;
+        const basePosX2 = baseX2 + 271;
+        const basePosY2 = baseY2 + 39;
+
+
+        const topGastos = gastos
+            .filter(g => g.value > 0)
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 3);
+
+
+        const descripciones = topGastos.map(g => {
+            const porcentaje = total > 0 ? ((g.value / total) * 100).toFixed(2) : 0;
+            return `${g.label.toLowerCase()} con un ${porcentaje}%`;
+        });
+
+
+        let textoGastos = '';
+        if (descripciones.length === 1) {
+            textoGastos = descripciones[0];
+        } else if (descripciones.length === 2) {
+            textoGastos = `${descripciones[0]} y ${descripciones[1]}`;
+        } else {
+            textoGastos = `${descripciones[0]}, ${descripciones[1]} y ${descripciones[2]}`;
+        }
+
+
+        const comentarioFinal =
+            `Los gastos que más influyen en tu
+presupuesto mensual son: ${textoGastos}.
+No se cuenta con un ahorro
+recurrente y esto puede llevar a
+endeudamiento y falta de liquidez.`;
+
+
+        doc
+            .save()
+            .fillColor(color)
+            .rect(basePosX2, basePosY2 - 1, cuadroAncho2, cuadroAlto2)
+            .fill()
+            .rect(basePosX2, basePosY2 - 1, cuadroAncho2 + 20, cuadroAlto2 + 1)
+            .stroke()
+            .restore()
+            .font('Helvetica-Bold')
+            .fontSize(15)
+            .fillColor('white')
+            .text(comentarioFinal, basePosX2 + 10, basePosY2 + 10, {
+                width: cuadroAncho2 - 20,
+                align: 'left'
+            });
+
+
+
+
+        // PAGINA 3 
+        doc.addPage();
+
+
+        if (DEBUG_GRID) {
+            doc.lineWidth(0.5).fontSize(6).fillColor('gray');
+            const pageWidth = doc.page.width;
+            const pageHeight = doc.page.height;
+
+            const STEP = 10;
+            for (let x = 0; x <= pageWidth; x += STEP) {
+                doc.moveTo(x, 0).lineTo(x, pageHeight).strokeColor('#e0e0e0').stroke();
+                if (x % 50 === 0) doc.text(x, x + 2, 10);
+            }
+            for (let y = 0; y <= pageHeight; y += STEP) {
+                doc.moveTo(0, y).lineTo(pageWidth, y).strokeColor('#e0e0e0').stroke();
+                if (y % 50 === 0) doc.text(y, 2, y + 2);
+            }
+        }
+
+        const ingresosBaseX = 280;
+        const ingresosBaseY = 30;
+        const ingresosTableWidth = 300;
+        const alto = 18;
+        const ingresosColLabel = ingresosBaseX + 10;
+        const ingresosColValue = ingresosBaseX + ingresosTableWidth - 10;
+
+        const ingresosAnuales = (datosPlan.ingresoNetoMensual || 0) * 12;
+        const segurosVal = (datosPlan.segurosMensuales || 0) * 12 + (datosPlan.segurosAnuales || 0);
+        const anualidadesVal = (datosPlan.anualidadesPresupuestadas || 0);
+        const impuestosVal = (datosPlan.impuestos || 0);
+
+        const totalAnualidades = segurosVal + anualidadesVal + impuestosVal;
+        const diferenciaIngresos = ingresosAnuales - totalAnualidades;
+        const provisionMensual = diferenciaIngresos / 12;
+
+
+        function formatCurrency(value) {
+            if (value < 0) {
+                return `(${Math.abs(value).toLocaleString('es-CO')})`;
+            }
+            return value.toLocaleString('es-CO');
+        }
+
+        doc.fillColor(Blue).font('Helvetica-Bold').fontSize(25).text('Ingresos anuales', ingresosBaseX - 230, ingresosBaseY + 140);
+
+        doc.font('Helvetica-Bold')
+            .fontSize(8)
+            .fillColor('white');
+
+
+        let y = ingresosBaseY;
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.fillColor('white').font('Helvetica-Bold').text('INGRESOS', ingresosColLabel, y + 7);
+        doc.text('Ingresos Anuales', ingresosColValue - 120, y + 7, {
+            width: 110,
+            align: 'right'
+        });
+        y += alto;
+
+
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.fillColor('white').font('Helvetica-Bold').text('TOTAL INGRESOS ANUALES', ingresosColLabel, y + 7);
+        doc.text(`$ ${formatCurrency(ingresosAnuales)}`, ingresosColValue - 120, y + 7, {
+            width: 110,
+            align: 'right'
+        });
+        y += alto;
+
+
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.fillColor('white').font('Helvetica-Bold').text('EGRESOS ANUALES', ingresosColLabel, y + 7);
+        doc.text('Ingresos Anuales', ingresosColValue - 120, y + 7, {
+            width: 110,
+            align: 'right'
+        });
+        y += alto;
+
+
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('white').stroke();
+        doc.fillColor('black').font('Helvetica').text('Seguros', ingresosColLabel, y + 7);
+        doc.text(`$ ${formatCurrency(segurosVal)}`, ingresosColValue - 120, y + 7, {
+            width: 110,
+            align: 'right'
+        });
+        y += alto;
+
+
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('white').stroke();
+        doc.fillColor('black').text('Anualidades Presupuestadas', ingresosColLabel, y + 7);
+        doc.text(`$ ${formatCurrency(anualidadesVal)}`, ingresosColValue - 120, y + 7, {
+            width: 110,
+            align: 'right'
+        });
+        y += alto;
+
+
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('white').stroke();
+        doc.fillColor('black').text('Impuestos', ingresosColLabel, y + 7);
+        doc.text(impuestosVal > 0 ? `$ ${formatCurrency(impuestosVal)}` : '-', ingresosColValue - 120, y + 7, {
+            width: 110,
+            align: 'right'
+        });
+        y += alto;
+
+
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.fillColor('white').font('Helvetica-Bold').text('TOTAL ANUALIDADES', ingresosColLabel, y + 7);
+        doc.text(`$ ${formatCurrency(totalAnualidades)}`, ingresosColValue - 120, y + 7, {
+            width: 110,
+            align: 'right'
+        });
+        y += alto;
+
+
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.fillColor('white').font('Helvetica-Bold').text('INGRESOS ANUALES - TOTAL ANUALIDADES', ingresosColLabel, y + 7);
+        doc.fillColor(diferenciaIngresos < 0 ? 'red' : 'white')
+            .text(`$ ${formatCurrency(diferenciaIngresos)}`, ingresosColValue - 120, y + 7, {
+                width: 110,
+                align: 'right'
+            });
+        y += alto;
+
+
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.fillColor('white').font('Helvetica-Bold').text('PROVISIÓN MENSUAL', ingresosColLabel, y + 7);
+        doc.fillColor(provisionMensual < 0 ? 'red' : 'white')
+            .text(`$ ${formatCurrency(provisionMensual)}`, ingresosColValue - 120, y + 7, {
+                width: 110,
+                align: 'right'
+            });
+
+
+
+        doc.rect(0, y + 50, 450, 150)
+            .lineWidth(1)
+            .stroke('#0000FF');
+
+        doc.fillColor('black')
+            .font('Helvetica')
+            .fontSize(13)
+            .text(
+                'Recuerda revisar si tus ingresos anuales cubren tus gastos anuales. Si esto no sucede, vale la pena que provisiones estos gastos, ya que caes en el riesgo de tomar deudas para cubrirlos.',
+                20,
+                y + 70, {
+                    width: 410
+                }
+            );
+
+
+        if (ingresosAnuales) {
+            doc.text(
+                'Estos ingresos podrían ser utilizados para provisionar tus extra a lo largo del año como impuestos, viajes, compras de Diciembre, entre otros, por esto, te recomiendo tener presente estos gastos y ahorrar este monto.', {
+                    width: 410
+                }
+            );
+        } else {
+            doc.text(
+                'Teniendo presente que no se reciben ingresos anuales como bonos o primas, vale la pena que provisiones tus extra a lo largo del año.', {
+                    width: 410
+                }
+            );
+        }
+
+
+
+
+        doc.fillColor(Blue).font('Helvetica-Bold').fontSize(25).text('Gastos anuales', ingresosBaseX + 90, ingresosBaseY + 360);
+
+        doc.rect(ingresosBaseX - 120, y + 240, 450, 130)
+            .fill(Blue)
+            .lineWidth(1);
+
+        doc.fillColor('white')
+            .font('Helvetica')
+            .fontSize(13)
+            .text(
+                `Es importante provisionar tus gastos anuales para evitar
+endeudamientos a corto plazo y vernos forzados a salir
+de activos productivos por falta de liquidez en el
+transcurso del año.`,
+                ingresosBaseX - 100,
+                y + 250, {
+                    width: 410
+                }
+            );
+
+
+        doc.rect(0, y + 400, 650, 30).fill(color).stroke();
+        doc.fillColor('white').fontSize(15).text('Distribución de gastos anuales', ingresosBaseX - 150, y + 410);
+
+
+        const data3 = {
+            labels: ['Seguros', 'Anualidades', 'Impuestos'],
+            datasets: [{
+                data: [segurosVal, anualidadesVal, impuestosVal],
+                backgroundColor: colors,
+                hoverBackgroundColor: colors.map(color => `${color}80`),
+            }],
+        };
+
+        const options3 = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 16,
+                            color: 'black'
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return `${tooltipItem.label}: $${tooltipItem.raw} (${((tooltipItem.raw / total) * 100).toFixed(2)}%)`;
+                        }
+                    }
+                },
+                datalabels: {
+                    formatter: function(value, ctx) {
+                        const percentage = ((value / total) * 50).toFixed(2) + '%';
+                        return percentage;
+                    },
+                    color: 'black',
+                    font: {
+                        weight: 'bold',
+                        size: 20
+                    },
+                    anchor: 'end',
+                    align: 'start',
+                    offset: 0,
+                    borderRadius: 4,
+                    textAlign: 'center',
+                }
+            }
+        };
+
+
+        const canvas3 = createCanvas(400, 400);
+        const ctx3 = canvas3.getContext('2d');
+
+
+        if (canvas3.chart) {
+            canvas3.chart.destroy();
+        }
+
+
+        canvas3.chart = new Chart(ctx3, {
+            type: 'pie',
+            data: data3,
+            options: options3,
+            plugins: [ChartDataLabels],
+        });
+
+        const buffer3 = canvas3.toBuffer('image/png');
+
+        doc.image(buffer3, ingresosBaseX - 220, y + 460, {
+            fit: [180, 180],
+            align: 'center',
+            valign: 'center',
+        });
+
+        doc
+            .save()
+            .moveTo(ingresosBaseX, y + 450)
+            .lineTo(ingresosBaseX, y + 450 + 300)
+            .strokeColor('black')
+            .lineWidth(1)
+            .stroke()
+            .restore()
+            .font('Helvetica')
+            .fontSize(12)
+            .fillColor('black')
+            .text(
+                `El gasto anual que genera un mayor impacto es el de anualidades presupuestadas y puedes verte en problemas si no tienes un plan para el pago de estas.`,
+                ingresosBaseX + 10,
+                y + 470, {
+                    width: 300,
+                    align: 'justify'
+                }
+            );
+
+
+
+
+        // PAGINA 4 - PATRIMONIO
+        doc.addPage();
+
+
+        if (DEBUG_GRID) {
+            doc.lineWidth(0.5).fontSize(6).fillColor('black');
+            const pageWidth = doc.page.width;
+            const pageHeight = doc.page.height;
+
+            const STEP = 10;
+            for (let x = 0; x <= pageWidth; x += STEP) {
+                doc.moveTo(x, 0).lineTo(x, pageHeight).strokeColor('#e0e0e0').stroke();
+                if (x % 50 === 0) doc.text(x, x + 2, 10);
+            }
+            for (let y = 0; y <= pageHeight; y += STEP) {
+                doc.moveTo(0, y).lineTo(pageWidth, y).strokeColor('#e0e0e0').stroke();
+                if (y % 50 === 0) doc.text(y, 2, y + 2);
+            }
+        }
+
+        const activosLiquidos = +(datosPlan.ahorroMensual || 0) +
+            +(datosPlan.primaAnual || 0) +
+            +(datosPlan.bonificacionesAnuales || 0);
+
+        const activosProductivos = +(datosPlan.anualidadesFijas || 0) +
+            +(datosPlan.anualidadesVariables || 0) +
+            +(datosPlan.segurosAnuales || 0) +
+            +(datosPlan.planB || 0);
+
+        const activosImproductivos = +(datosPlan.patrimonio || 0);
+
+        const totalActivos = activosLiquidos + activosProductivos + activosImproductivos;
+
+        const pasivos = +(datosPlan.deuda || 0) +
+            +(datosPlan.totalDeudasMensuales || 0);
+
+        const totalPatrimonio = totalActivos - pasivos;
+
+        const relacionPasivosActivos = totalActivos > 0 ?
+            ((pasivos / totalActivos) * 100).toFixed(0) + "%" :
+            "0%";
+
+
+        const baseX4 = 150;
+        let currentY4 = 30;
+        const tableWidth4 = 300;
+        const rowHeight4 = 18;
+        const Ptexto = 160;
+
+        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#0C596E');
+        doc.fillColor('black').font('Helvetica-Bold').fontSize(12)
+            .text('PATRIMONIO', baseX4 + 100, currentY4 + 7);
+        currentY4 += rowHeight4;
+
+        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#C9DDE3');
+        doc.fillColor('black').font('Helvetica').fontSize(8)
+            .text('ACTIVO LIQUIDO', baseX4 + 10, currentY4 + 7);
+        doc.fillColor('black')
+            .text(`$ ${activosLiquidos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
+                width: 130,
+                align: 'right'
+            });
+        currentY4 += rowHeight4;
+
+        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#E9EFF1');
+        doc.fillColor('black')
+            .text('ACTIVO PRODUCTIVO', baseX4 + 10, currentY4 + 7);
+        doc.fillColor('black')
+            .text(`$ ${activosProductivos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
+                width: 130,
+                align: 'right'
+            });
+        currentY4 += rowHeight4;
+
+        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#C9DDE3');
+        doc.fillColor('black')
+            .text('ACTIVO IMPRODUCTIVO', baseX4 + 10, currentY4 + 7);
+        doc.fillColor('black')
+            .text(`$ ${activosImproductivos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
+                width: 130,
+                align: 'right'
+            });
+        currentY4 += rowHeight4;
+
+        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#0C596E');
+        doc.fillColor('black').font('Helvetica-Bold')
+            .text('TOTAL ACTIVO', baseX4 + 10, currentY4 + 7);
+        doc.fillColor('black')
+            .text(`$ ${totalActivos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
+                width: 130,
+                align: 'right'
+            });
+        currentY4 += rowHeight4;
+
+        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#E6E6E6');
+        doc.fillColor('black').font('Helvetica')
+            .text('DEUDAS TOTALES', baseX4 + 10, currentY4 + 7);
+        doc.fillColor('black')
+            .text(`$ ${pasivos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
+                width: 130,
+                align: 'right'
+            });
+        currentY4 += rowHeight4;
+
+        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#F2F2F2');
+        doc.fillColor('black').font('Helvetica-Bold')
+            .text('TOTAL PATRIMONIO', baseX4 + 10, currentY4 + 7);
+
+        if (totalPatrimonio < 0) {
+            doc.fillColor('red');
+        } else {
+            doc.fillColor('black');
+        }
+        doc.text(`$ ${totalPatrimonio.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
+            width: 130,
+            align: 'right'
+        });
+        currentY4 += rowHeight4;
+
+        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#F9D570');
+        doc.fillColor('black').font('Helvetica-Bold')
+            .text('RELACION PASIVOS / ACTIVOS', baseX4 + 10, currentY4 + 7);
+        doc.fillColor('black')
+            .text(relacionPasivosActivos, baseX4 + Ptexto, currentY4 + 7, {
+                width: 130,
+                align: 'right'
+            });
+        currentY4 += rowHeight4 + 20;
+
+        const boxHeight4 = 80;
+        doc.rect(baseX4, currentY4, tableWidth4, boxHeight4).strokeColor('#0C596E').lineWidth(1).stroke();
+
+        let textoExplicativo = '';
+
+        const ratioPasivosActivos = totalActivos > 0 ? pasivos / totalActivos : 0;
+
+        if (ratioPasivosActivos > 0.5) {
+            textoExplicativo = 'Cuentas con un elevado nivel de endeudamiento, es importante que empieces a gestionar una estrategia de desmonte de deudas y a su vez generar inversiones para tener libertad financiera.';
+        } else if (ratioPasivosActivos >= 0.3) {
+            textoExplicativo = 'Cuentas con un nivel de endeudamiento aceptable, es importante buscar bajar la deuda y a su vez generar inversiones para tener libertad financiera.';
+        } else {
+            textoExplicativo = 'Cuentas con un nivel de endeudamiento adecuado, vale la pena comenzar muy pronto una estrategia de inversiones.';
+        }
+
+        doc.fillColor('black').font('Helvetica').fontSize(10)
+            .text(
+                textoExplicativo,
+                baseX4 + 10, currentY4 + 10, {
+                    width: tableWidth4 - 20,
+                    align: 'justify'
+                }
+            );
+
+        let baseX5 = 0;
+        let currentY5 = currentY4 + 100;
+        const tableWidth5 = 300;
+        let rowHeight5 = 20;
+        const colTipo = 100;
+        const colCalif = 60;
+
+        doc.rect(baseX5, currentY5, 350, 40)
+            .fillColor(Blue)
+            .fill();
+
+        doc.fillColor('white')
+            .fontSize(20);
+
+        const text6 = 'Riesgos';
+
+        const textWidth6 = doc.widthOfString(text6);
+        const textHeight6 = doc.currentLineHeight();
+        const x6 = baseX5 + (350 - textWidth6) / 2;
+        const y6 = currentY5 + 10;
+
+        doc.text(text6, x6, y6);
+
+        baseX5 = 30;
+        currentY5 = currentY4 + 180;
+
+        doc.rect(baseX5, currentY5, tableWidth5, rowHeight5).fill('#1E5A6D');
+        doc.fillColor('white').font('Helvetica-Bold').fontSize(10);
+        doc.text('Tipo de Riesgo', baseX5 + 5, currentY5 + 5, {
+            width: colTipo,
+            align: 'center'
+        });
+        doc.text('Calificación', baseX5 + colTipo + 5, currentY5 + 5, {
+            width: colCalif,
+            align: 'center'
+        });
+        doc.text('Comentarios', baseX5 + colTipo + colCalif + 5, currentY5 + 5, {
+            width: tableWidth5 - colTipo - colCalif - 10,
+            align: 'center'
+        });
+
+        currentY5 += rowHeight5;
+
+        const riesgos = [{
+                nombre: 'Riesgo vejez',
+                color: datosPlan.planB && parseInt(datosPlan.planB) > 0 ? 'yellow' : 'red',
+                comentario: datosPlan.planB && parseInt(datosPlan.planB) > 0 ?
+                    'Es clave validar si el monto que estás ahorrando para tu pensión realmente te permitirá mantener tu estilo de vida al retirarte. Un buen plan de retiro necesita una base financiera sólida.' : 'No tener un plan B para tu pensión puede poner en riesgo tu bienestar futuro. Comienza a construir desde hoy un ahorro complementario que te permita retirarte con tranquilidad.'
+            },
+            {
+                nombre: 'Riesgo de Vida',
+                color: datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'Sí' ? 'red' : datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'No' ? 'yellow' : 'green',
+                comentario: datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'Sí' ?
+                    'No contar con un seguro de vida teniendo hijos puede poner en riesgo la estabilidad financiera de tu familia en caso de una eventualidad. Considera incluirlo dentro de tu planeación financiera cuanto antes.' : datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'No' ?
+                    'Aunque no tengas dependientes o personas a cargo, los seguros de vida pueden ser una herramienta estratégica. Evalúa cómo un seguro puede formar parte de tu estrategia financiera a largo plazo.' : 'Tienes un seguro de vida, lo cual es una excelente base para proteger a tus seres queridos.'
+            },
+            {
+                nombre: 'Riesgo de incapacidad',
+                color: datosPlan.seguroIncapacidad === 'Sí' ? 'yellow' : 'red',
+                comentario: datosPlan.seguroIncapacidad === 'Sí' ?
+                    'Revisa las cláusulas de tu seguro de incapacidad o valores de cobertura, ya que a veces esto no es suficiente para protegerte si una enfermedad grave afecta tus finanzas.' : 'Tu capacidad de generar ingresos es uno de tus activos más valiosos. Un seguro de incapacidad te protege si por alguna razón no puedes seguir ejerciendo tu profesión.'
+            },
+            {
+                nombre: 'Riesgo de vida',
+                color: datosPlan.polizaSalud === 'Sí' ? 'green' : 'yellow',
+                comentario: datosPlan.polizaSalud === 'Sí' ?
+                    '¡Excelente! Contar con un seguro de salud adicional demuestra una planificación financiera inteligente. Esta cobertura te permite acceder a mejores servicios.' : 'Depender únicamente del sistema de salud obligatorio puede no ser suficiente frente a una urgencia o enfermedad de alto costo. Tener una cobertura adicional te da acceso más ágil y de mejor calidad.'
+            },
+            {
+                nombre: 'Fondo de emergencia',
+                color: datosPlan.fondoEmergencia === 'Sí' ? 'green' : 'red',
+                comentario: datosPlan.fondoEmergencia === 'Sí' ?
+                    '¡Muy bien! Tener un fondo de emergencia demuestra una excelente gestión financiera. Asegúrate de que ese fondo cubra entre tres y seis meses de tus gastos fijos.' : 'No contar con un fondo de emergencia te deja expuesto a dificultades económicas en caso de imprevistos, como desempleo, enfermedad o una reparación urgente.'
+            }
+        ];
+
+        rowHeight5 = 80;
+
+        riesgos.forEach(r => {
+
+            doc.fillColor('black')
+                .font('Helvetica')
+                .fontSize(8)
+                .text(r.nombre, baseX5 + 5, currentY5 + 2, {
+                    width: colTipo,
+                    height: rowHeight5,
+                    align: 'left',
+                    valign: 'center'
+                });
+
+            let colorFill = r.color === 'green' ? '#4CAF50' :
+                r.color === 'yellow' ? '#FFEB3B' :
+                '#F44336';
+
+            doc.rect(baseX5 + colTipo + 5, currentY5 + 2, colCalif - 10, rowHeight5 - 4).fill(colorFill);
+
+            // Comentarios
+            doc.fillColor('black')
+                .font('Helvetica')
+                .fontSize(8)
+                .text(r.comentario, baseX5 + colTipo + colCalif + 5, currentY5 + 2, {
+                    width: tableWidth5 - colTipo - colCalif - 10,
+                    height: rowHeight5,
+                    align: 'justify'
+                });
+
+            currentY5 += rowHeight5;
+        });
+
+
+        const leyendaX = baseX5 + tableWidth5 + 20;
+        let leyendaY = currentY5 - 150;
+        const leyendaWidth = 200;
+        const leyendaHeight = 15;
+        const espacioEntreItems = 10;
+
+        const leyenda = [{
+                color: '#4CAF50',
+                texto: '¡Lo estás haciendo muy bien! Vas por un excelente camino en este aspecto de tus finanzas.'
+            },
+            {
+                color: '#FFEB3B',
+                texto: 'Hay oportunidades de mejora. Estás en una zona intermedia y podrías fortalecer aún más esta área.'
+            },
+            {
+                color: '#F44336',
+                texto: 'Hay oportunidades de mejora. Estás en una zona intermedia y podrías fortalecer aún más esta área.'
+            }
+        ];
+
+        let alturaTotal = (leyenda.length * (leyendaHeight + espacioEntreItems + 20)) + 30;
+
+        doc.roundedRect(leyendaX - 10, leyendaY - 10, leyendaWidth + 50, alturaTotal, 10).fill('#1565C0'); // Azul fuerte
+
+        doc.fillColor('white')
+            .font('Helvetica-Bold')
+            .fontSize(12)
+            .text('Interpretación de colores:', leyendaX, leyendaY, {
+                width: leyendaWidth,
+                align: 'left'
+            });
+
+        leyendaY += 25;
+
+        leyenda.forEach(item => {
+            doc.circle(
+                leyendaX + leyendaHeight / 2,
+                leyendaY + leyendaHeight / 2,
+                leyendaHeight / 2
+            ).fill(item.color);
+
+            doc.fillColor('white')
+                .font('Helvetica')
+                .fontSize(9)
+                .text(item.texto, leyendaX + leyendaHeight + 10, leyendaY - 2, {
+                    width: leyendaWidth,
+                    align: 'left'
+                });
+
+            leyendaY += leyendaHeight + espacioEntreItems + 20;
+        });
+
+        // PAGINA 5 - 
+        doc.addPage();
+
+        const fondoPath2 = path.join(__dirname, 'assets', '5.jpg');
+        if (fs.existsSync(fondoPath2)) {
+            doc.image(fondoPath2, 0, 0, {
+                width: doc.page.width,
+                height: doc.page.height
+            });
+        }
+
+
+
+
+        doc.end();
+    } catch (error) {
+        console.error('❌ Error al procesar MiniPlan:', error);
+        res.status(500).json({
+            error: error.message || 'Error al procesar el formulario'
+        });
+    }
 };
 
-module.exports = { procesarMiniPlan };
+module.exports = {
+    procesarMiniPlan
+};
