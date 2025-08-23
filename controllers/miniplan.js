@@ -12,6 +12,13 @@ const {
 Chart.register(...registerables);
 const MiniPlan = require('../models/ApiMiniPLan');
 
+
+const robotoRegularPath = path.join(__dirname, '..', 'fonts', 'Roboto-Regular.ttf');
+const robotoBoldPath = path.join(__dirname, '..', 'fonts', 'Roboto-Bold.ttf');
+const robotoItalicPath = path.join(__dirname, '..', 'fonts', 'Roboto-Italic.ttf');
+const robotoBoldItalicPath = path.join(__dirname, '..', 'fonts', 'Roboto-BoldItalic.ttf');
+
+
 const normalizarSegunEsquema = (data, schema) => {
     if (!schema || !schema.paths) {
         throw new Error('El esquema no está definido o no tiene paths');
@@ -98,6 +105,16 @@ const procesarMiniPlan = async (req, res) => {
             margin: 0,
             size: 'A4'
         });
+
+       
+        doc.registerFont('Roboto', robotoRegularPath);
+        doc.registerFont('Roboto-Bold', robotoBoldPath);
+        doc.registerFont('Roboto-Italic', robotoItalicPath);
+        doc.registerFont('Roboto-BoldItalic', robotoBoldItalicPath);
+
+
+
+
         const buffers = [];
 
         doc.on('data', buffers.push.bind(buffers));
@@ -162,14 +179,14 @@ const procesarMiniPlan = async (req, res) => {
         }
 
         const titulo = 'Objetivos de vida';
-        doc.font('Helvetica-Bold').fontSize(20).fillColor(Blue);
+        doc.font('Roboto-Bold').fontSize(20).fillColor(Blue);
         const tituloW = doc.widthOfString(titulo);
         const tituloH = doc.currentLineHeight();
         const tituloX = LEFT.x + (LEFT.width - tituloW) / 2;
         const tituloY = LEFT.y + (LEFT.height - tituloH) / 2;
         doc.text(titulo, tituloX, tituloY);
 
-        doc.font('Helvetica').fontSize(12).fillColor('black');
+        doc.font('Roboto').fontSize(12).fillColor('black');
 
         const lista = datosPlan.objetivos || [];
         const lineHeight = 18;
@@ -192,7 +209,7 @@ const procesarMiniPlan = async (req, res) => {
         const boxY = 590;
         const boxHeight = 40;
 
-        doc.font('Helvetica-Bold').fontSize(labelFontSize);
+        doc.font('Roboto-Bold').fontSize(labelFontSize);
 
         doc.rect(boxX, boxY, doc.page.width, boxHeight).fill(Blue);
 
@@ -210,11 +227,11 @@ const procesarMiniPlan = async (req, res) => {
         const box3PaddingX = 12;
         const box3PaddingY = 6;
 
-        doc.font('Helvetica-Bold').fontSize(label3FontSize);
+        doc.font('Roboto-Bold').fontSize(label3FontSize);
         const text3Width = doc.widthOfString(label3);
         const text3Height = doc.currentLineHeight();
 
-        doc.font('Helvetica-Bold')
+        doc.font('Roboto-Bold')
             .fontSize(label3FontSize)
             .fillColor(Blue)
             .text(label3, box3X + box3PaddingX, box3Y + box3PaddingY);
@@ -271,7 +288,7 @@ const procesarMiniPlan = async (req, res) => {
 Ánimo, tal vez la meta sea alta, pero sabemos que armando un portafolio de inversiones ganador lo lograrás.`;
 
 
-        doc.font('Helvetica')
+        doc.font('Roboto')
             .fontSize(12)
             .fillColor('black')
             .text(mensaje, 50, 50, {
@@ -280,7 +297,7 @@ const procesarMiniPlan = async (req, res) => {
             });
 
 
-        doc.font('Helvetica-Bold')
+        doc.font('Roboto-Bold')
             .fontSize(10)
             .fillColor('white');
 
@@ -313,17 +330,14 @@ const procesarMiniPlan = async (req, res) => {
                 label: 'Protecciones Personales',
                 value: datosPlan.segurosMensuales
             },
-            {
-                label: 'Otros Descuentos de Nómina',
-                value: datosPlan.totalDeudasMensuales
-            },
+           
             {
                 label: 'Educación o gastos hijos',
                 value: datosPlan.hijos
             },
             {
                 label: 'Servicio a la deuda',
-                value: datosPlan.deuda
+                value: datosPlan.totalDeudasMensuales
             },
             {
                 label: 'Otros',
@@ -396,7 +410,7 @@ const procesarMiniPlan = async (req, res) => {
         doc.rect(baseX, currentY, rectWidth, rectHeight).fill(Blue);
         doc.fillColor('white');
 
-        doc.font('Helvetica-Bold').fontSize(14).text(
+        doc.font('Roboto-Bold').fontSize(14).text(
             text,
             baseX,
             currentY + (rectHeight / 2) - 7, {
@@ -410,10 +424,10 @@ const procesarMiniPlan = async (req, res) => {
 
         doc.fontSize(10).fillColor('#333333');
 
-        doc.font('Helvetica-Bold').fillColor("black").text('INGRESOS', baseX + 5, currentY + 5);
+        doc.font('Roboto-Bold').fillColor("black").text('INGRESOS', baseX + 5, currentY + 5);
 
         let rowHeight = 18;
-        doc.font('Helvetica-Bold').fillColor("black").text('Ingresos mensuales', col1 + 20, currentY + 5);
+        doc.font('Roboto-Bold').fillColor("black").text('Ingresos mensuales', col1 + 20, currentY + 5);
 
 
         doc.lineWidth(0.8);
@@ -423,19 +437,20 @@ const procesarMiniPlan = async (req, res) => {
 
 
         currentY += rowHeight;
-        doc.font('Helvetica-Bold').fillColor("black").text('TOTAL INGRESOS MENSUALES', baseX + 5, currentY + 5);
-        doc.fillColor('red').text(
-            ingresoNeto.toLocaleString('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                maximumFractionDigits: 0
+        doc.font('Roboto-Bold').fillColor("black").text('TOTAL INGRESOS MENSUALES', baseX + 5, currentY + 5);
+        doc.fillColor(ingresoNeto >= 0 ? 'green' : 'red').text(
+        ingresoNeto.toLocaleString('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        maximumFractionDigits: 0
             }),
             col2, currentY + 5
         );
+
         doc.rect(baseX, currentY - 2, col2 - baseX + 80, rowHeight).stroke();
 
         currentY += 40;
-        doc.font('Helvetica-Bold').fillColor("black").text('GASTOS', baseX + 5, currentY);
+        doc.font('Roboto-Bold').fillColor("black").text('GASTOS', baseX + 5, currentY);
         currentY += rowHeight;
 
 
@@ -443,7 +458,7 @@ const procesarMiniPlan = async (req, res) => {
         gastos.forEach(g => {
             const value = g.value || 0;
 
-            doc.font('Helvetica').fillColor("black").text(`${g.label}:`, baseX + 5, currentY + 5);
+            doc.font('Roboto').fillColor("black").text(`${g.label}:`, baseX + 5, currentY + 5);
             doc.fillColor('#000000').text(
                 value.toLocaleString('es-CO', {
                     style: 'currency',
@@ -459,7 +474,7 @@ const procesarMiniPlan = async (req, res) => {
             currentY += rowHeight;
         });
 
-        doc.font('Helvetica-Bold').fillColor("black").text('TOTAL GASTOS', baseX + 5, currentY + 5);
+        doc.font('Roboto-Bold').fillColor("black").text('TOTAL GASTOS', baseX + 5, currentY + 5);
         doc.fillColor('#000000').text(
             totalGastos.toLocaleString('es-CO', {
                 style: 'currency',
@@ -473,9 +488,9 @@ const procesarMiniPlan = async (req, res) => {
         currentY += 30;
 
         doc.rect(baseX + 1, currentY, tableWidth + 69, 20).fill('#ff9900');
-        doc.font('Helvetica-Bold').fillColor("black").text('INGRESOS - GASTOS:', baseX + 5, currentY + 5);
+        doc.font('Roboto-Bold').fillColor("black").text('INGRESOS - GASTOS:', baseX + 5, currentY + 5);
         doc.fillColor('#000000')
-            .font('Helvetica-Bold')
+            .font('Roboto-Bold')
             .text(
                 ` ${(ingresoNeto - totalGastos).toLocaleString('es-CO',{style:'currency',currency:'COP', maximumFractionDigits: 0})}`,
                 col2,
@@ -500,7 +515,7 @@ const procesarMiniPlan = async (req, res) => {
         // Cuadro de la tabla con solo el título
         doc.rect(baseX2, currentY2, rectWidth2, rectHeight2).fill(color);
 
-        doc.font('Helvetica-Bold').fontSize(14).fillColor('white').text(
+        doc.font('Roboto-Bold').fontSize(14).fillColor('white').text(
             text2,
             baseX2,
             currentY2 + (rectHeight2 / 2) - 7, {
@@ -644,7 +659,7 @@ endeudamiento y falta de liquidez.`;
             .rect(basePosX2, basePosY2 - 1, cuadroAncho2 + 20, cuadroAlto2 + 1)
             .stroke()
             .restore()
-            .font('Helvetica-Bold')
+            .font('Roboto-Bold')
             .fontSize(15)
             .fillColor('white')
             .text(comentarioFinal, basePosX2 + 10, basePosY2 + 10, {
@@ -689,7 +704,11 @@ endeudamiento y falta de liquidez.`;
 
         const totalAnualidades = segurosVal + anualidadesVal + impuestosVal;
         const diferenciaIngresos = ingresosAnuales - totalAnualidades;
-        const provisionMensual = diferenciaIngresos / 12;
+
+        const provisionMensual = diferenciaIngresos < 0
+            ? diferenciaIngresos / 12
+            : 0;
+
 
 
         function formatCurrency(value) {
@@ -699,16 +718,16 @@ endeudamiento y falta de liquidez.`;
             return value.toLocaleString('es-CO');
         }
 
-        doc.fillColor(Blue).font('Helvetica-Bold').fontSize(25).text('Ingresos anuales', ingresosBaseX - 230, ingresosBaseY + 140);
+        doc.fillColor(Blue).font('Roboto-Bold').fontSize(25).text('Ingresos anuales', ingresosBaseX - 230, ingresosBaseY + 140);
 
-        doc.font('Helvetica-Bold')
+        doc.font('Roboto-Bold')
             .fontSize(8)
             .fillColor('white');
 
 
         let y = ingresosBaseY;
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
-        doc.fillColor('white').font('Helvetica-Bold').text('INGRESOS', ingresosColLabel, y + 7);
+        doc.fillColor('white').font('Roboto-Bold').text('INGRESOS', ingresosColLabel, y + 7);
         doc.text('Ingresos Anuales', ingresosColValue - 120, y + 7, {
             width: 110,
             align: 'right'
@@ -717,7 +736,7 @@ endeudamiento y falta de liquidez.`;
 
 
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
-        doc.fillColor('white').font('Helvetica-Bold').text('TOTAL INGRESOS ANUALES', ingresosColLabel, y + 7);
+        doc.fillColor('white').font('Roboto-Bold').text('TOTAL INGRESOS ANUALES', ingresosColLabel, y + 7);
         doc.text(`$ ${formatCurrency(ingresosAnuales)}`, ingresosColValue - 120, y + 7, {
             width: 110,
             align: 'right'
@@ -726,7 +745,7 @@ endeudamiento y falta de liquidez.`;
 
 
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
-        doc.fillColor('white').font('Helvetica-Bold').text('EGRESOS ANUALES', ingresosColLabel, y + 7);
+        doc.fillColor('white').font('Roboto-Bold').text('EGRESOS ANUALES', ingresosColLabel, y + 7);
         doc.text('Ingresos Anuales', ingresosColValue - 120, y + 7, {
             width: 110,
             align: 'right'
@@ -735,7 +754,7 @@ endeudamiento y falta de liquidez.`;
 
 
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('white').stroke();
-        doc.fillColor('black').font('Helvetica').text('Seguros', ingresosColLabel, y + 7);
+        doc.fillColor('black').font('Roboto').text('Seguros', ingresosColLabel, y + 7);
         doc.text(`$ ${formatCurrency(segurosVal)}`, ingresosColValue - 120, y + 7, {
             width: 110,
             align: 'right'
@@ -762,7 +781,7 @@ endeudamiento y falta de liquidez.`;
 
 
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
-        doc.fillColor('white').font('Helvetica-Bold').text('TOTAL ANUALIDADES', ingresosColLabel, y + 7);
+        doc.fillColor('white').font('Roboto-Bold').text('TOTAL ANUALIDADES', ingresosColLabel, y + 7);
         doc.text(`$ ${formatCurrency(totalAnualidades)}`, ingresosColValue - 120, y + 7, {
             width: 110,
             align: 'right'
@@ -771,7 +790,7 @@ endeudamiento y falta de liquidez.`;
 
 
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
-        doc.fillColor('white').font('Helvetica-Bold').text('INGRESOS ANUALES - TOTAL ANUALIDADES', ingresosColLabel, y + 7);
+        doc.fillColor('white').font('Roboto-Bold').text('INGRESOS ANUALES - TOTAL ANUALIDADES', ingresosColLabel, y + 7);
         doc.fillColor(diferenciaIngresos < 0 ? 'red' : 'white')
             .text(`$ ${formatCurrency(diferenciaIngresos)}`, ingresosColValue - 120, y + 7, {
                 width: 110,
@@ -781,7 +800,7 @@ endeudamiento y falta de liquidez.`;
 
 
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
-        doc.fillColor('white').font('Helvetica-Bold').text('PROVISIÓN MENSUAL', ingresosColLabel, y + 7);
+        doc.fillColor('white').font('Roboto-Bold').text('PROVISIÓN MENSUAL', ingresosColLabel, y + 7);
         doc.fillColor(provisionMensual < 0 ? 'red' : 'white')
             .text(`$ ${formatCurrency(provisionMensual)}`, ingresosColValue - 120, y + 7, {
                 width: 110,
@@ -795,7 +814,7 @@ endeudamiento y falta de liquidez.`;
             .stroke('#0000FF');
 
         doc.fillColor('black')
-            .font('Helvetica')
+            .font('Roboto')
             .fontSize(13)
             .text(
                 'Recuerda revisar si tus ingresos anuales cubren tus gastos anuales. Si esto no sucede, vale la pena que provisiones estos gastos, ya que caes en el riesgo de tomar deudas para cubrirlos.',
@@ -823,14 +842,14 @@ endeudamiento y falta de liquidez.`;
 
 
 
-        doc.fillColor(Blue).font('Helvetica-Bold').fontSize(25).text('Gastos anuales', ingresosBaseX + 90, ingresosBaseY + 360);
+        doc.fillColor(Blue).font('Roboto-Bold').fontSize(25).text('Gastos anuales', ingresosBaseX + 90, ingresosBaseY + 350);
 
         doc.rect(ingresosBaseX - 120, y + 240, 450, 130)
             .fill(Blue)
             .lineWidth(1);
 
         doc.fillColor('white')
-            .font('Helvetica')
+            .font('Roboto')
             .fontSize(13)
             .text(
                 `Es importante provisionar tus gastos anuales para evitar
@@ -928,7 +947,7 @@ transcurso del año.`,
             .lineWidth(1)
             .stroke()
             .restore()
-            .font('Helvetica')
+            .font('Roboto')
             .fontSize(12)
             .fillColor('black')
             .text(
@@ -989,82 +1008,13 @@ transcurso del año.`,
         const baseX4 = 150;
         let currentY4 = 30;
         const tableWidth4 = 300;
-        const rowHeight4 = 18;
+        const rowHeight4 = 20;
         const Ptexto = 160;
 
-        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#0C596E');
-        doc.fillColor('black').font('Helvetica-Bold').fontSize(12)
-            .text('PATRIMONIO', baseX4 + 100, currentY4 + 7);
-        currentY4 += rowHeight4;
-
-        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#C9DDE3');
-        doc.fillColor('black').font('Helvetica').fontSize(8)
-            .text('ACTIVO LIQUIDO', baseX4 + 10, currentY4 + 7);
-        doc.fillColor('black')
-            .text(`$ ${activosLiquidos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
-                width: 130,
-                align: 'right'
-            });
-        currentY4 += rowHeight4;
-
-        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#E9EFF1');
-        doc.fillColor('black')
-            .text('ACTIVO PRODUCTIVO', baseX4 + 10, currentY4 + 7);
-        doc.fillColor('black')
-            .text(`$ ${activosProductivos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
-                width: 130,
-                align: 'right'
-            });
-        currentY4 += rowHeight4;
-
-        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#C9DDE3');
-        doc.fillColor('black')
-            .text('ACTIVO IMPRODUCTIVO', baseX4 + 10, currentY4 + 7);
-        doc.fillColor('black')
-            .text(`$ ${activosImproductivos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
-                width: 130,
-                align: 'right'
-            });
-        currentY4 += rowHeight4;
-
-        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#0C596E');
-        doc.fillColor('black').font('Helvetica-Bold')
-            .text('TOTAL ACTIVO', baseX4 + 10, currentY4 + 7);
-        doc.fillColor('black')
-            .text(`$ ${totalActivos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
-                width: 130,
-                align: 'right'
-            });
-        currentY4 += rowHeight4;
-
-        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#E6E6E6');
-        doc.fillColor('black').font('Helvetica')
-            .text('DEUDAS TOTALES', baseX4 + 10, currentY4 + 7);
-        doc.fillColor('black')
-            .text(`$ ${pasivos.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
-                width: 130,
-                align: 'right'
-            });
-        currentY4 += rowHeight4;
-
-        doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#F2F2F2');
-        doc.fillColor('black').font('Helvetica-Bold')
-            .text('TOTAL PATRIMONIO', baseX4 + 10, currentY4 + 7);
-
-        if (totalPatrimonio < 0) {
-            doc.fillColor('red');
-        } else {
-            doc.fillColor('black');
-        }
-        doc.text(`$ ${totalPatrimonio.toLocaleString()}`, baseX4 + Ptexto, currentY4 + 7, {
-            width: 130,
-            align: 'right'
-        });
-        currentY4 += rowHeight4;
-
+       
         doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#F9D570');
-        doc.fillColor('black').font('Helvetica-Bold')
-            .text('RELACION PASIVOS / ACTIVOS', baseX4 + 10, currentY4 + 7);
+        doc.fillColor('black').font('Roboto-Bold')
+            .text('RELACION PASIVOS / ACTIVOS', baseX4 + 10, currentY4 + 5);
         doc.fillColor('black')
             .text(relacionPasivosActivos, baseX4 + Ptexto, currentY4 + 7, {
                 width: 130,
@@ -1072,7 +1022,7 @@ transcurso del año.`,
             });
         currentY4 += rowHeight4 + 20;
 
-        const boxHeight4 = 80;
+        const boxHeight4 = 100;
         doc.rect(baseX4, currentY4, tableWidth4, boxHeight4).strokeColor('#0C596E').lineWidth(1).stroke();
 
         let textoExplicativo = '';
@@ -1087,7 +1037,7 @@ transcurso del año.`,
             textoExplicativo = 'Cuentas con un nivel de endeudamiento adecuado, vale la pena comenzar muy pronto una estrategia de inversiones.';
         }
 
-        doc.fillColor('black').font('Helvetica').fontSize(10)
+        doc.fillColor('black').font('Roboto').fontSize(10)
             .text(
                 textoExplicativo,
                 baseX4 + 10, currentY4 + 10, {
@@ -1103,7 +1053,7 @@ transcurso del año.`,
         const colTipo = 100;
         const colCalif = 60;
 
-        doc.rect(baseX5, currentY5, 350, 40)
+        doc.rect(baseX5, currentY5 + 40, 350, 40)
             .fillColor(Blue)
             .fill();
 
@@ -1115,15 +1065,15 @@ transcurso del año.`,
         const textWidth6 = doc.widthOfString(text6);
         const textHeight6 = doc.currentLineHeight();
         const x6 = baseX5 + (350 - textWidth6) / 2;
-        const y6 = currentY5 + 10;
+        const y6 = currentY5 + 50;
 
         doc.text(text6, x6, y6);
 
         baseX5 = 30;
-        currentY5 = currentY4 + 180;
+        currentY5 = currentY4 + 210;
 
         doc.rect(baseX5, currentY5, tableWidth5, rowHeight5).fill('#1E5A6D');
-        doc.fillColor('white').font('Helvetica-Bold').fontSize(10);
+        doc.fillColor('white').font('Roboto-Bold').fontSize(10);
         doc.text('Tipo de Riesgo', baseX5 + 5, currentY5 + 5, {
             width: colTipo,
             align: 'center'
@@ -1177,7 +1127,7 @@ transcurso del año.`,
         riesgos.forEach(r => {
 
             doc.fillColor('black')
-                .font('Helvetica')
+                .font('Roboto')
                 .fontSize(8)
                 .text(r.nombre, baseX5 + 5, currentY5 + 2, {
                     width: colTipo,
@@ -1194,7 +1144,7 @@ transcurso del año.`,
 
             // Comentarios
             doc.fillColor('black')
-                .font('Helvetica')
+                .font('Roboto')
                 .fontSize(8)
                 .text(r.comentario, baseX5 + colTipo + colCalif + 5, currentY5 + 2, {
                     width: tableWidth5 - colTipo - colCalif - 10,
@@ -1231,7 +1181,7 @@ transcurso del año.`,
         doc.roundedRect(leyendaX - 10, leyendaY - 10, leyendaWidth + 50, alturaTotal, 10).fill('#1565C0'); // Azul fuerte
 
         doc.fillColor('white')
-            .font('Helvetica-Bold')
+            .font('Roboto-Bold')
             .fontSize(12)
             .text('Interpretación de colores:', leyendaX, leyendaY, {
                 width: leyendaWidth,
@@ -1248,7 +1198,7 @@ transcurso del año.`,
             ).fill(item.color);
 
             doc.fillColor('white')
-                .font('Helvetica')
+                .font('Roboto')
                 .fontSize(9)
                 .text(item.texto, leyendaX + leyendaHeight + 10, leyendaY - 2, {
                     width: leyendaWidth,
