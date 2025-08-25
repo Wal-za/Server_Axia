@@ -63,7 +63,7 @@ const normalizarSegunEsquema = (data, schema) => {
 
 const procesarMiniPlan = async (req, res) => {
 
-    const Blue = "#3c6a9b";
+    const Blue = "#203d5c";
     try {
         const datos = req.body;
 
@@ -361,7 +361,7 @@ const procesarMiniPlan = async (req, res) => {
         } else if (ratioDeudaIngresos <= 0.3) {
             comentario = `Cuentas con un porcentaje bajo de endeudamiento, lo cual es aceptable.`;
         } else {
-            comentario = `Cuentas con un porcentaje alto de endeudamiento, vale la pena que revises cómo bajar el porcentaje que estás destinando a tus deudas.`;
+            comentario = `Cuentas con un porcentaje alto de endeudamiento, vale la pena que revises cómo bajar el porcentaje que estás destinando a tus deudas. No obstante, revisa otros indicadores como el endeudamiento en el patrimonio. Ten presente que las deudas buenas corresponden a un análisis diferente, ya que estás poniendo dinero en tu bolsillo después de haberte endeudado.`;
         }
 
 
@@ -370,7 +370,7 @@ const procesarMiniPlan = async (req, res) => {
         doc.rect(baseX + 1, baseY + 38, 600, 290).fill("white");
 
         const cuadroAncho = 280;
-        const cuadroAlto = 290;
+        const cuadroAlto = 272;
         const basePosX = baseX + 271;
         const basePosY = baseY + 39;
 
@@ -498,121 +498,117 @@ const procesarMiniPlan = async (req, res) => {
             );
 
 
+const baseX2 = 50;
+const baseY2 = 500;
+const tableWidth2 = 250;
+const col1_2 = baseX2 + 150;
+const col2_2 = baseX2 + tableWidth2 - 10;
+const color = "#b88b4d";
 
-        const baseX2 = 50;
-        const baseY2 = 500;
-        const tableWidth2 = 250;
-        const col1_2 = baseX2 + 150;
-        const col2_2 = baseX2 + tableWidth2 - 10;
-        const color = "#efb85a";
+// Título de "Presupuesto"
+let currentY2 = baseY2;
+const rectWidth2 = tableWidth2 + 20;
+const rectHeight2 = 25;
+const text2 = 'Distribución de gastos mensuales';
 
-        // Título de "Presupuesto"
-        let currentY2 = baseY2;
-        const rectWidth2 = tableWidth2 + 20;
-        const rectHeight2 = 25;
-        const text2 = 'Distribución de gastos mensuales';
+// Cuadro de la tabla con solo el título
+doc.rect(baseX2, currentY2, rectWidth2, rectHeight2).fill(color);
 
-        // Cuadro de la tabla con solo el título
-        doc.rect(baseX2, currentY2, rectWidth2, rectHeight2).fill(color);
+doc.font('Roboto-Bold').fontSize(14).fillColor('white').text(
+    text2,
+    baseX2,
+    currentY2 + (rectHeight2 / 2) - 7, {
+        width: rectWidth2,
+        align: 'center'
+    }
+);
 
-        doc.font('Roboto-Bold').fontSize(14).fillColor('white').text(
-            text2,
-            baseX2,
-            currentY2 + (rectHeight2 / 2) - 7, {
-                width: rectWidth2,
-                align: 'center'
-            }
-        );
+doc.fontSize(10);
+doc.rect(baseX2 + 1, baseY2 + 38, 270, 290).fill("white");
 
-        doc.fontSize(10);
-        doc.rect(baseX2 + 1, baseY2 + 38, 270, 290).fill("white");
+const total = gastos.reduce((acc, item) => acc + item.value, 0);
 
-        const total = gastos.reduce((acc, item) => acc + item.value, 0);
+const colors = [
+    '#faeb61ff',  
+    '#f9ae3dff',  
+    '#b2b44cff',  
+    '#b762c6ff', 
+    '#6df443ff',  
+    '#61bce6ff',  
+    '#959ea2ff',  
+    '#f14441ff'   
+];
 
-        const colors = [
-            '#FF0000',
-            '#00FF00',
-            '#0000FF',
-            '#FFFF00',
-            '#FF00FF',
-            '#00FFFF',
-            '#FFA500',
-            '#800080',
-            '#FFD700',
-            '#008080'
-        ];
 
-        // Asegurarnos de que haya suficientes colores para los datos
-        const usedColors = colors.slice(0, gastos.length);
+const usedColors = colors.slice(0, gastos.length);
 
-        // Crear el lienzo en memoria
-        const canvas = createCanvas(400, 400);
-        const ctx = canvas.getContext('2d');
+const canvas = createCanvas(400, 400);
+const ctx = canvas.getContext('2d');
 
-        // Configuración de los datos del gráfico
-        const data = {
-            labels: gastos.map(gasto => gasto.label),
-            datasets: [{
-                data: gastos.map(gasto => gasto.value),
-                backgroundColor: usedColors,
-                hoverBackgroundColor: usedColors.map(color => `${color}80`),
-            }],
-        };
+const data = {
+    labels: gastos.map(gasto => gasto.label),
+    datasets: [{
+        data: gastos.map(gasto => gasto.value),
+        backgroundColor: usedColors,
+        hoverBackgroundColor: usedColors.map(color => `${color}80`),
+    }],
+};
 
-        const options = {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        font: {
-                            color: 'black'
-                        }
-                    }
-
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            return `${tooltipItem.label}: ${tooltipItem.raw} (${((tooltipItem.raw / total) * 100).toFixed(2)}%)`;
-                        }
-                    }
-                },
-
-                datalabels: {
-                    formatter: function(value, ctx) {
-                        const percentage = ((value / total) * 100).toFixed(2) + '%';
-                        return percentage;
-                    },
-                    color: 'black',
-                    font: {
-                        weight: 'bold',
-                        size: 12
-                    },
-                    anchor: 'end',
-                    align: 'start',
-                    offset: 0,
-                    borderRadius: 4,
-                    textAlign: 'center',
+const options = {
+    responsive: true,
+    plugins: {
+        legend: {
+            position: 'top',
+            labels: {
+                font: {
+                    color: 'black'
                 }
             }
-        };
+        },
+        tooltip: {
+            callbacks: {
+                label: function(tooltipItem) {
+                    if (total === 0) return `${tooltipItem.label}: 0 (0%)`;
+                    return `${tooltipItem.label}: ${tooltipItem.raw} (${((tooltipItem.raw / total) * 100).toFixed(2)}%)`;
+                }
+            }
+        },
+        datalabels: {
+            formatter: function(value) {
+                if (total === 0) return null; // evitar división por 0
+                const percentage = (value / total) * 100;
+                if (percentage === 0) return null; // no mostrar 0%
+                if (Math.round(percentage) === 100) return '100%';
+                return percentage.toFixed(2) + '%';
+            },
+            color: 'black',
+            font: {
+                weight: 'bold',
+                size: 12
+            },
+            anchor: 'end',
+            align: 'start',
+            offset: 0,
+            borderRadius: 4,
+            textAlign: 'center',
+        }
+    }
+};
 
-        // Crear el gráfico de torta
-        new Chart(ctx, {
-            type: 'pie',
-            data: data,
-            options: options,
-            plugins: [ChartDataLabels],
-        });
+// Crear el gráfico de torta
+new Chart(ctx, {
+    type: 'pie',
+    data: data,
+    options: options,
+    plugins: [ChartDataLabels],
+});
 
-        const buffer = canvas.toBuffer('image/png');
-        doc.image(buffer, baseX2, baseY2 + 40, {
-            fit: [250, 250],
-            align: 'center',
-            valign: 'center',
-        });
-
+const buffer = canvas.toBuffer('image/png');
+doc.image(buffer, baseX2, baseY2 + 40, {
+    fit: [250, 250],
+    align: 'center',
+    valign: 'center',
+});
 
 
         const cuadroAncho2 = 280;
@@ -642,13 +638,11 @@ const procesarMiniPlan = async (req, res) => {
             textoGastos = `${descripciones[0]}, ${descripciones[1]} y ${descripciones[2]}`;
         }
 
+            const comentarioFinal = `Los gastos que más influyen en tu presupuesto mensual son: ${textoGastos}.` + 
+                (datosPlan.ahorroMensual === 0 
+                    ? `\nNo se cuenta con un ahorro recurrente y esto puede llevar a endeudamiento y falta de liquidez.` 
+                    : "");
 
-        const comentarioFinal =
-            `Los gastos que más influyen en tu
-presupuesto mensual son: ${textoGastos}.
-No se cuenta con un ahorro
-recurrente y esto puede llevar a
-endeudamiento y falta de liquidez.`;
 
 
         doc
@@ -867,52 +861,90 @@ transcurso del año.`,
         doc.fillColor('white').fontSize(15).text('Distribución de gastos anuales', ingresosBaseX - 150, y + 410);
 
 
-        const data3 = {
-            labels: ['Seguros', 'Anualidades', 'Impuestos'],
-            datasets: [{
-                data: [segurosVal, anualidadesVal, impuestosVal],
-                backgroundColor: colors,
-                hoverBackgroundColor: colors.map(color => `${color}80`),
-            }],
-        };
+ const egresosData = [
+    { label: 'Seguros', value: segurosVal },
+    { label: 'Anualidades', value: anualidadesVal },
+    { label: 'Impuestos', value: impuestosVal }
+];
 
-        const options3 = {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        font: {
-                            size: 16,
-                            color: 'black'
-                        }
-                    }
+// No filtramos para que siempre estén todas las etiquetas
+const filteredLabels = egresosData.map(item => item.label);
+const filteredValues = egresosData.map(item => item.value);
+
+// Colores originales para la leyenda (sin transparencia)
+const legendColors = colors;
+
+// Colores para sectores (transparentes si valor es 0)
+const filteredColors = filteredValues.map((val, i) =>
+    val === 0 ? '#eeeeee00' : colors[i]
+);
+
+const total2 = filteredValues.reduce((sum, val) => sum + val, 0);
+
+const data3 = {
+    labels: filteredLabels,
+    datasets: [{
+        data: filteredValues,
+        backgroundColor: filteredColors,
+        hoverBackgroundColor: filteredColors.map(color => {
+            if (color.endsWith('00')) {
+                return color.slice(0, -2) + '80';
+            }
+            return `${color}80`;
+        }),
+    }],
+};
+
+const options3 = {
+    responsive: true,
+    plugins: {
+        legend: {
+            position: 'top',
+            labels: {
+                font: {
+                    size: 16,
+                    color: 'black'
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            return `${tooltipItem.label}: $${tooltipItem.raw} (${((tooltipItem.raw / total) * 100).toFixed(2)}%)`;
-                        }
-                    }
-                },
-                datalabels: {
-                    formatter: function(value, ctx) {
-                        const percentage = ((value / total) * 50).toFixed(2) + '%';
-                        return percentage;
-                    },
-                    color: 'black',
-                    font: {
-                        weight: 'bold',
-                        size: 20
-                    },
-                    anchor: 'end',
-                    align: 'start',
-                    offset: 0,
-                    borderRadius: 4,
-                    textAlign: 'center',
+                generateLabels: function(chart) {
+                    const original = Chart.overrides.pie.plugins.legend.labels.generateLabels;
+                    const labelsOriginal = original.call(this, chart);
+                    labelsOriginal.forEach((label, i) => {
+                        label.fillStyle = legendColors[i]; 
+                    });
+                    return labelsOriginal;
                 }
             }
-        };
+        },
+        tooltip: {
+            callbacks: {
+                label: function(tooltipItem) {
+                    const value = tooltipItem.raw;
+                    const label = tooltipItem.label;
+                    const percentage = total2 ? ((value / total2) * 100).toFixed(2) : '0.00';
+                    return `${label}: $${value} (${percentage}%)`;
+                }
+            }
+        },
+        datalabels: {
+            formatter: function(value) {
+                        const percent = total2 ? (value / total2) * 100 : 0;
+                if (percent === 0) return null; // no muestra etiqueta si es 0%
+                if (Math.round(percent) === 100) return '100%';
+                return percent.toFixed(2) + '%';
+            },
+            color: 'black',
+            font: {
+                weight: 'bold',
+                size: 20
+            },
+            anchor: 'end',
+            align: 'start',
+            offset: 0,
+            borderRadius: 4,
+            textAlign: 'center',
+        }
+    }
+};
 
 
         const canvas3 = createCanvas(400, 400);
@@ -1178,7 +1210,7 @@ transcurso del año.`,
 
         let alturaTotal = (leyenda.length * (leyendaHeight + espacioEntreItems + 20)) + 30;
 
-        doc.roundedRect(leyendaX - 10, leyendaY - 10, leyendaWidth + 50, alturaTotal, 10).fill('#1565C0'); // Azul fuerte
+        doc.roundedRect(leyendaX - 10, leyendaY - 10, leyendaWidth + 100, alturaTotal, 10).fill(Blue); // Azul fuerte
 
         doc.fillColor('white')
             .font('Roboto-Bold')
