@@ -106,7 +106,7 @@ const procesarMiniPlan = async (req, res) => {
             size: 'A4'
         });
 
-       
+
         doc.registerFont('Roboto', robotoRegularPath);
         doc.registerFont('Roboto-Bold', robotoBoldPath);
         doc.registerFont('Roboto-Italic', robotoItalicPath);
@@ -137,14 +137,13 @@ const procesarMiniPlan = async (req, res) => {
         }
 
 
-        // OPCIÓN DEBUG: Cuadrícula        
         const DEBUG_GRID = false;
         if (DEBUG_GRID) {
             doc.lineWidth(0.5).fontSize(6).fillColor('gray');
             const pageWidth = doc.page.width;
             const pageHeight = doc.page.height;
 
-            const STEP = 10; // cada 10 puntos
+            const STEP = 10;
             for (let x = 0; x <= pageWidth; x += STEP) {
                 doc.moveTo(x, 0).lineTo(x, pageHeight).strokeColor('#e0e0e0').stroke();
                 if (x % 50 === 0) doc.text(x, x + 2, 10);
@@ -174,8 +173,8 @@ const procesarMiniPlan = async (req, res) => {
         };
 
         if (DEBUG_AREAS) {
-            doc.rect(LEFT.x, LEFT.y, LEFT.width, LEFT.height).stroke('red'); // área izquierda
-            doc.rect(RIGHT.x, RIGHT.y, RIGHT.width, RIGHT.height).stroke('blue'); // área derecha
+            doc.rect(LEFT.x, LEFT.y, LEFT.width, LEFT.height).stroke('red');
+            doc.rect(RIGHT.x, RIGHT.y, RIGHT.width, RIGHT.height).stroke('blue');
         }
 
         const titulo = 'Objetivos de vida';
@@ -284,8 +283,9 @@ const procesarMiniPlan = async (req, res) => {
             maximumFractionDigits: 0,
         });
 
-        const mensaje = `Este es el total del monto (${monto}) que deberías ahorrar para lograr tu libertad financiera.
+        const mensaje = `Este es el total del monto (${monto}) que deberías ahorrar para lograr tu libertad financiera.\n
 Ánimo, tal vez la meta sea alta, pero sabemos que armando un portafolio de inversiones ganador lo lograrás.`;
+
 
 
         doc.font('Roboto')
@@ -310,6 +310,9 @@ const procesarMiniPlan = async (req, res) => {
 
         const ingresoNeto = datosPlan.ingresoNetoMensual || 0;
 
+
+
+
         const gastos = [{
                 label: 'Transporte',
                 value: datosPlan.transporte
@@ -330,7 +333,7 @@ const procesarMiniPlan = async (req, res) => {
                 label: 'Protecciones Personales',
                 value: datosPlan.segurosMensuales
             },
-           
+
             {
                 label: 'Educación o gastos hijos',
                 value: datosPlan.hijos
@@ -352,7 +355,7 @@ const procesarMiniPlan = async (req, res) => {
             totalGastos += value;
         });
 
-        const ratioDeudaIngresos = ingresoNeto > 0 ? totalGastos / ingresoNeto : 0;
+        const ratioDeudaIngresos = ingresoNeto > 0 ? datosPlan.totalDeudasMensuales / ingresoNeto : 0;
 
         let comentario = "";
 
@@ -370,39 +373,52 @@ const procesarMiniPlan = async (req, res) => {
         doc.rect(baseX + 1, baseY + 38, 600, 290).fill("white");
 
         const cuadroAncho = 280;
-        const cuadroAlto = 272;
         const basePosX = baseX + 271;
-        const basePosY = baseY + 39;
+        const basePosY = baseY + 49;
 
 
 
-        doc
-            .save()
+        let padding = 20;
+
+        doc.save()
+
 
             .fillColor(Blue)
-            .rect(basePosX, basePosY - 1, cuadroAncho, cuadroAlto)
+            .rect(
+                basePosX,
+                basePosY,
+                cuadroAncho,
+                doc.fontSize(15).heightOfString(comentario, {
+                    width: cuadroAncho - padding * 2
+                }) + padding * 2
+            )
             .fill()
-
 
             .strokeColor('gray')
             .lineWidth(1)
-            .rect(basePosX, basePosY - 1, cuadroAncho + 20, cuadroAlto + 1)
+            .rect(
+                basePosX,
+                basePosY,
+                cuadroAncho,
+                doc.fontSize(15).heightOfString(comentario, {
+                    width: cuadroAncho - padding * 2
+                }) + padding * 2
+            )
             .stroke()
 
             .restore();
 
-
         doc
             .fillColor('white')
             .fontSize(15)
-            .text(comentario, basePosX + 10, basePosY + 50, {
-                width: cuadroAncho - 20,
+            .text(comentario, basePosX + padding, basePosY + padding, {
+                width: cuadroAncho - padding * 2,
             });
 
 
 
 
-        let currentY = baseY;
+        let currentY = baseY + 10;
         const rectWidth = tableWidth + 20;
         const rectHeight = 25;
         const text = 'Presupuesto:';
@@ -424,10 +440,10 @@ const procesarMiniPlan = async (req, res) => {
 
         doc.fontSize(10).fillColor('#333333');
 
-        doc.font('Roboto-Bold').fillColor("black").text('INGRESOS', baseX + 5, currentY + 5);
+        doc.font('Roboto-Bold').fillColor("black").text('INGRESOS', baseX + 5, currentY + 4);
 
         let rowHeight = 18;
-        doc.font('Roboto-Bold').fillColor("black").text('Ingresos mensuales', col1 + 20, currentY + 5);
+        doc.font('Roboto-Bold').fillColor("black").text('Ingresos mensuales', col1 + 20, currentY + 4);
 
 
         doc.lineWidth(0.8);
@@ -439,10 +455,10 @@ const procesarMiniPlan = async (req, res) => {
         currentY += rowHeight;
         doc.font('Roboto-Bold').fillColor("black").text('TOTAL INGRESOS MENSUALES', baseX + 5, currentY + 5);
         doc.fillColor(ingresoNeto >= 0 ? 'green' : 'red').text(
-        ingresoNeto.toLocaleString('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        maximumFractionDigits: 0
+            ingresoNeto.toLocaleString('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                maximumFractionDigits: 0
             }),
             col2, currentY + 5
         );
@@ -458,7 +474,7 @@ const procesarMiniPlan = async (req, res) => {
         gastos.forEach(g => {
             const value = g.value || 0;
 
-            doc.font('Roboto').fillColor("black").text(`${g.label}:`, baseX + 5, currentY + 5);
+            doc.font('Roboto').fillColor("black").text(`${g.label}:`, baseX + 5, currentY + 3);
             doc.fillColor('#000000').text(
                 value.toLocaleString('es-CO', {
                     style: 'currency',
@@ -498,117 +514,114 @@ const procesarMiniPlan = async (req, res) => {
             );
 
 
-const baseX2 = 50;
-const baseY2 = 500;
-const tableWidth2 = 250;
-const col1_2 = baseX2 + 150;
-const col2_2 = baseX2 + tableWidth2 - 10;
-const color = "#b88b4d";
+        const baseX2 = 50;
+        const baseY2 = 500;
+        const tableWidth2 = 250;
+        const col1_2 = baseX2 + 150;
+        const col2_2 = baseX2 + tableWidth2 - 10;
+        const color = "#b88b4d";
 
-// Título de "Presupuesto"
-let currentY2 = baseY2;
-const rectWidth2 = tableWidth2 + 20;
-const rectHeight2 = 25;
-const text2 = 'Distribución de gastos mensuales';
+        let currentY2 = baseY2;
+        const rectWidth2 = tableWidth2 + 20;
+        const rectHeight2 = 25;
+        const text2 = 'Distribución de gastos mensuales';
 
-// Cuadro de la tabla con solo el título
-doc.rect(baseX2, currentY2, rectWidth2, rectHeight2).fill(color);
+        doc.rect(baseX2, currentY2, rectWidth2, rectHeight2).fill(color);
 
-doc.font('Roboto-Bold').fontSize(14).fillColor('white').text(
-    text2,
-    baseX2,
-    currentY2 + (rectHeight2 / 2) - 7, {
-        width: rectWidth2,
-        align: 'center'
-    }
-);
+        doc.font('Roboto-Bold').fontSize(14).fillColor('white').text(
+            text2,
+            baseX2,
+            currentY2 + (rectHeight2 / 2) - 7, {
+                width: rectWidth2,
+                align: 'center'
+            }
+        );
 
-doc.fontSize(10);
-doc.rect(baseX2 + 1, baseY2 + 38, 270, 290).fill("white");
+        doc.fontSize(10);
+        doc.rect(baseX2 + 1, baseY2 + 38, 270, 290).fill("white");
 
-const total = gastos.reduce((acc, item) => acc + item.value, 0);
+        const total = gastos.reduce((acc, item) => acc + item.value, 0);
 
-const colors = [
-    '#faeb61ff',  
-    '#f9ae3dff',  
-    '#b2b44cff',  
-    '#b762c6ff', 
-    '#6df443ff',  
-    '#61bce6ff',  
-    '#959ea2ff',  
-    '#f14441ff'   
-];
+        const colors = [
+            '#faeb61ff',
+            '#f9ae3dff',
+            '#b2b44cff',
+            '#b762c6ff',
+            '#6df443ff',
+            '#61bce6ff',
+            '#959ea2ff',
+            '#f14441ff'
+        ];
 
 
-const usedColors = colors.slice(0, gastos.length);
+        const usedColors = colors.slice(0, gastos.length);
 
-const canvas = createCanvas(400, 400);
-const ctx = canvas.getContext('2d');
+        const canvas = createCanvas(400, 400);
+        const ctx = canvas.getContext('2d');
 
-const data = {
-    labels: gastos.map(gasto => gasto.label),
-    datasets: [{
-        data: gastos.map(gasto => gasto.value),
-        backgroundColor: usedColors,
-        hoverBackgroundColor: usedColors.map(color => `${color}80`),
-    }],
-};
+        const data = {
+            labels: gastos.map(gasto => gasto.label),
+            datasets: [{
+                data: gastos.map(gasto => gasto.value),
+                backgroundColor: usedColors,
+                hoverBackgroundColor: usedColors.map(color => `${color}80`),
+            }],
+        };
 
-const options = {
-    responsive: true,
-    plugins: {
-        legend: {
-            position: 'top',
-            labels: {
-                font: {
-                    color: 'black'
+        const options = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            color: 'black'
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            if (total === 0) return `${tooltipItem.label}: 0 (0%)`;
+                            return `${tooltipItem.label}: ${tooltipItem.raw} (${((tooltipItem.raw / total) * 100).toFixed(2)}%)`;
+                        }
+                    }
+                },
+                datalabels: {
+                    formatter: function(value) {
+                        if (total === 0) return null;
+                        const percentage = (value / total) * 100;
+                        if (percentage === 0) return null;
+                        if (Math.round(percentage) === 100) return '100%';
+                        return percentage.toFixed(2) + '%';
+                    },
+                    color: 'black',
+                    font: {
+                        weight: 'bold',
+                        size: 12
+                    },
+                    anchor: 'end',
+                    align: 'start',
+                    offset: 0,
+                    borderRadius: 4,
+                    textAlign: 'center',
                 }
             }
-        },
-        tooltip: {
-            callbacks: {
-                label: function(tooltipItem) {
-                    if (total === 0) return `${tooltipItem.label}: 0 (0%)`;
-                    return `${tooltipItem.label}: ${tooltipItem.raw} (${((tooltipItem.raw / total) * 100).toFixed(2)}%)`;
-                }
-            }
-        },
-        datalabels: {
-            formatter: function(value) {
-                if (total === 0) return null; // evitar división por 0
-                const percentage = (value / total) * 100;
-                if (percentage === 0) return null; // no mostrar 0%
-                if (Math.round(percentage) === 100) return '100%';
-                return percentage.toFixed(2) + '%';
-            },
-            color: 'black',
-            font: {
-                weight: 'bold',
-                size: 12
-            },
-            anchor: 'end',
-            align: 'start',
-            offset: 0,
-            borderRadius: 4,
-            textAlign: 'center',
-        }
-    }
-};
+        };
 
-// Crear el gráfico de torta
-new Chart(ctx, {
-    type: 'pie',
-    data: data,
-    options: options,
-    plugins: [ChartDataLabels],
-});
+        new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: options,
+            plugins: [ChartDataLabels],
+        });
 
-const buffer = canvas.toBuffer('image/png');
-doc.image(buffer, baseX2, baseY2 + 40, {
-    fit: [250, 250],
-    align: 'center',
-    valign: 'center',
-});
+        const buffer = canvas.toBuffer('image/png');
+        doc.image(buffer, baseX2, baseY2 + 40, {
+            fit: [250, 250],
+            align: 'center',
+            valign: 'center',
+        });
 
 
         const cuadroAncho2 = 280;
@@ -638,27 +651,35 @@ doc.image(buffer, baseX2, baseY2 + 40, {
             textoGastos = `${descripciones[0]}, ${descripciones[1]} y ${descripciones[2]}`;
         }
 
-            const comentarioFinal = `Los gastos que más influyen en tu presupuesto mensual son: ${textoGastos}.` + 
-                (datosPlan.ahorroMensual === 0 
-                    ? `\nNo se cuenta con un ahorro recurrente y esto puede llevar a endeudamiento y falta de liquidez.` 
-                    : "");
+        const comentarioFinal = `Los gastos que más influyen en tu presupuesto mensual son: ${textoGastos}.` +
+            (datosPlan.ahorroMensual === 0 ?
+                `\nNo se cuenta con un ahorro recurrente y esto puede llevar a endeudamiento y falta de liquidez.` :
+                "");
 
 
+
+        padding = 20;
+        const textHeight3 = doc.font('Roboto-Bold').fontSize(15).heightOfString(comentarioFinal, {
+            width: cuadroAncho2 - padding * 2,
+            align: 'left',
+        });
 
         doc
             .save()
             .fillColor(color)
-            .rect(basePosX2, basePosY2 - 1, cuadroAncho2, cuadroAlto2)
+            .rect(basePosX2, basePosY2, cuadroAncho2, textHeight3 + padding * 2)
             .fill()
-            .rect(basePosX2, basePosY2 - 1, cuadroAncho2 + 20, cuadroAlto2 + 1)
+            .strokeColor('#9f9f9f')
+            .lineWidth(1)
+            .rect(basePosX2, basePosY2, cuadroAncho2, textHeight3 + padding * 2)
             .stroke()
             .restore()
             .font('Roboto-Bold')
             .fontSize(15)
             .fillColor('white')
-            .text(comentarioFinal, basePosX2 + 10, basePosY2 + 10, {
-                width: cuadroAncho2 - 20,
-                align: 'left'
+            .text(comentarioFinal, basePosX2 + padding, basePosY2 + padding, {
+                width: cuadroAncho2 - padding * 2,
+                align: 'left',
             });
 
 
@@ -691,17 +712,18 @@ doc.image(buffer, baseX2, baseY2 + 40, {
         const ingresosColLabel = ingresosBaseX + 10;
         const ingresosColValue = ingresosBaseX + ingresosTableWidth - 10;
 
-        const ingresosAnuales = (datosPlan.ingresoNetoMensual || 0) * 12;
-        const segurosVal = (datosPlan.segurosMensuales || 0) * 12 + (datosPlan.segurosAnuales || 0);
+
+        const ingresosAnuales = (datosPlan.primaAnual || 0) + (datosPlan.bonificacionAnual || 0);
+        const segurosVal = (datosPlan.segurosAnuales || 0);
         const anualidadesVal = (datosPlan.anualidadesPresupuestadas || 0);
         const impuestosVal = (datosPlan.impuestos || 0);
 
-        const totalAnualidades = segurosVal + anualidadesVal + impuestosVal;
+        const totalAnualidades = segurosVal + anualidadesVal + impuestosVal + (datosPlan.anualidadesFijas || 0);
         const diferenciaIngresos = ingresosAnuales - totalAnualidades;
 
-        const provisionMensual = diferenciaIngresos < 0
-            ? diferenciaIngresos / 12
-            : 0;
+        const provisionMensual = diferenciaIngresos < 0 ?
+            diferenciaIngresos / 12 :
+            0;
 
 
 
@@ -720,7 +742,7 @@ doc.image(buffer, baseX2, baseY2 + 40, {
 
 
         let y = ingresosBaseY;
-        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill(Blue).stroke();
         doc.fillColor('white').font('Roboto-Bold').text('INGRESOS', ingresosColLabel, y + 7);
         doc.text('Ingresos Anuales', ingresosColValue - 120, y + 7, {
             width: 110,
@@ -729,7 +751,7 @@ doc.image(buffer, baseX2, baseY2 + 40, {
         y += alto;
 
 
-        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill(Blue).stroke();
         doc.fillColor('white').font('Roboto-Bold').text('TOTAL INGRESOS ANUALES', ingresosColLabel, y + 7);
         doc.text(`$ ${formatCurrency(ingresosAnuales)}`, ingresosColValue - 120, y + 7, {
             width: 110,
@@ -738,7 +760,7 @@ doc.image(buffer, baseX2, baseY2 + 40, {
         y += alto;
 
 
-        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill(Blue).stroke();
         doc.fillColor('white').font('Roboto-Bold').text('EGRESOS ANUALES', ingresosColLabel, y + 7);
         doc.text('Ingresos Anuales', ingresosColValue - 120, y + 7, {
             width: 110,
@@ -774,7 +796,7 @@ doc.image(buffer, baseX2, baseY2 + 40, {
         y += alto;
 
 
-        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill(Blue).stroke();
         doc.fillColor('white').font('Roboto-Bold').text('TOTAL ANUALIDADES', ingresosColLabel, y + 7);
         doc.text(`$ ${formatCurrency(totalAnualidades)}`, ingresosColValue - 120, y + 7, {
             width: 110,
@@ -783,7 +805,7 @@ doc.image(buffer, baseX2, baseY2 + 40, {
         y += alto;
 
 
-        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill(Blue).stroke();
         doc.fillColor('white').font('Roboto-Bold').text('INGRESOS ANUALES - TOTAL ANUALIDADES', ingresosColLabel, y + 7);
         doc.fillColor(diferenciaIngresos < 0 ? 'red' : 'white')
             .text(`$ ${formatCurrency(diferenciaIngresos)}`, ingresosColValue - 120, y + 7, {
@@ -793,7 +815,7 @@ doc.image(buffer, baseX2, baseY2 + 40, {
         y += alto;
 
 
-        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('#1f4e78').stroke();
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill(Blue).stroke();
         doc.fillColor('white').font('Roboto-Bold').text('PROVISIÓN MENSUAL', ingresosColLabel, y + 7);
         doc.fillColor(provisionMensual < 0 ? 'red' : 'white')
             .text(`$ ${formatCurrency(provisionMensual)}`, ingresosColValue - 120, y + 7, {
@@ -805,7 +827,7 @@ doc.image(buffer, baseX2, baseY2 + 40, {
 
         doc.rect(0, y + 50, 450, 150)
             .lineWidth(1)
-            .stroke('#0000FF');
+            .stroke(Blue);
 
         doc.fillColor('black')
             .font('Roboto')
@@ -813,21 +835,20 @@ doc.image(buffer, baseX2, baseY2 + 40, {
             .text(
                 'Recuerda revisar si tus ingresos anuales cubren tus gastos anuales. Si esto no sucede, vale la pena que provisiones estos gastos, ya que caes en el riesgo de tomar deudas para cubrirlos.',
                 20,
-                y + 70, {
+                y + 60, {
                     width: 410
                 }
             );
 
-
-        if (ingresosAnuales) {
+        if (ingresosAnuales > 0) {
             doc.text(
-                'Estos ingresos podrían ser utilizados para provisionar tus extra a lo largo del año como impuestos, viajes, compras de Diciembre, entre otros, por esto, te recomiendo tener presente estos gastos y ahorrar este monto.', {
+                '\nEstos ingresos podrían ser utilizados para provisionar tus extra a lo largo del año como impuestos, viajes, compras de Diciembre, entre otros, por esto, te recomiendo tener presente estos gastos y ahorrar este monto.', {
                     width: 410
                 }
             );
         } else {
             doc.text(
-                'Teniendo presente que no se reciben ingresos anuales como bonos o primas, vale la pena que provisiones tus extra a lo largo del año.', {
+                '\nTeniendo presente que no se reciben ingresos anuales como bonos o primas, vale la pena que provisiones tus extra a lo largo del año.', {
                     width: 410
                 }
             );
@@ -851,100 +872,108 @@ endeudamientos a corto plazo y vernos forzados a salir
 de activos productivos por falta de liquidez en el
 transcurso del año.`,
                 ingresosBaseX - 100,
-                y + 250, {
+                y + 270, {
                     width: 410
                 }
             );
 
 
-        doc.rect(0, y + 400, 650, 30).fill(color).stroke();
-        doc.fillColor('white').fontSize(15).text('Distribución de gastos anuales', ingresosBaseX - 150, y + 410);
+        doc.rect(0, y + 400, 650, 40).fill(color).stroke();
+        doc.fillColor('white')
+            .font('Roboto-Bold')
+            .fontSize(20)
+            .text('Distribución de gastos anuales', ingresosBaseX - 150, y + 410);
 
 
- const egresosData = [
-    { label: 'Seguros', value: segurosVal },
-    { label: 'Anualidades', value: anualidadesVal },
-    { label: 'Impuestos', value: impuestosVal }
-];
-
-// No filtramos para que siempre estén todas las etiquetas
-const filteredLabels = egresosData.map(item => item.label);
-const filteredValues = egresosData.map(item => item.value);
-
-// Colores originales para la leyenda (sin transparencia)
-const legendColors = colors;
-
-// Colores para sectores (transparentes si valor es 0)
-const filteredColors = filteredValues.map((val, i) =>
-    val === 0 ? '#eeeeee00' : colors[i]
-);
-
-const total2 = filteredValues.reduce((sum, val) => sum + val, 0);
-
-const data3 = {
-    labels: filteredLabels,
-    datasets: [{
-        data: filteredValues,
-        backgroundColor: filteredColors,
-        hoverBackgroundColor: filteredColors.map(color => {
-            if (color.endsWith('00')) {
-                return color.slice(0, -2) + '80';
+        const egresosData = [{
+                label: 'Seguros',
+                value: segurosVal
+            },
+            {
+                label: 'Anualidades',
+                value: anualidadesVal
+            },
+            {
+                label: 'Impuestos',
+                value: impuestosVal
             }
-            return `${color}80`;
-        }),
-    }],
-};
+        ];
 
-const options3 = {
-    responsive: true,
-    plugins: {
-        legend: {
-            position: 'top',
-            labels: {
-                font: {
-                    size: 16,
-                    color: 'black'
+        const filteredLabels = egresosData.map(item => item.label);
+        const filteredValues = egresosData.map(item => item.value);
+
+        const legendColors = colors;
+
+        const filteredColors = filteredValues.map((val, i) =>
+            val === 0 ? '#eeeeee00' : colors[i]
+        );
+
+        const total2 = filteredValues.reduce((sum, val) => sum + val, 0);
+
+        const data3 = {
+            labels: filteredLabels,
+            datasets: [{
+                data: filteredValues,
+                backgroundColor: filteredColors,
+                hoverBackgroundColor: filteredColors.map(color => {
+                    if (color.endsWith('00')) {
+                        return color.slice(0, -2) + '80';
+                    }
+                    return `${color}80`;
+                }),
+            }],
+        };
+
+        const options3 = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 16,
+                            color: 'black'
+                        },
+                        generateLabels: function(chart) {
+                            const original = Chart.overrides.pie.plugins.legend.labels.generateLabels;
+                            const labelsOriginal = original.call(this, chart);
+                            labelsOriginal.forEach((label, i) => {
+                                label.fillStyle = legendColors[i];
+                            });
+                            return labelsOriginal;
+                        }
+                    }
                 },
-                generateLabels: function(chart) {
-                    const original = Chart.overrides.pie.plugins.legend.labels.generateLabels;
-                    const labelsOriginal = original.call(this, chart);
-                    labelsOriginal.forEach((label, i) => {
-                        label.fillStyle = legendColors[i]; 
-                    });
-                    return labelsOriginal;
-                }
-            }
-        },
-        tooltip: {
-            callbacks: {
-                label: function(tooltipItem) {
-                    const value = tooltipItem.raw;
-                    const label = tooltipItem.label;
-                    const percentage = total2 ? ((value / total2) * 100).toFixed(2) : '0.00';
-                    return `${label}: $${value} (${percentage}%)`;
-                }
-            }
-        },
-        datalabels: {
-            formatter: function(value) {
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const value = tooltipItem.raw;
+                            const label = tooltipItem.label;
+                            const percentage = total2 ? ((value / total2) * 100).toFixed(2) : '0.00';
+                            return `${label}: $${value} (${percentage}%)`;
+                        }
+                    }
+                },
+                datalabels: {
+                    formatter: function(value) {
                         const percent = total2 ? (value / total2) * 100 : 0;
-                if (percent === 0) return null; // no muestra etiqueta si es 0%
-                if (Math.round(percent) === 100) return '100%';
-                return percent.toFixed(2) + '%';
-            },
-            color: 'black',
-            font: {
-                weight: 'bold',
-                size: 20
-            },
-            anchor: 'end',
-            align: 'start',
-            offset: 0,
-            borderRadius: 4,
-            textAlign: 'center',
-        }
-    }
-};
+                        if (percent === 0) return null;
+                        if (Math.round(percent) === 100) return '100%';
+                        return percent.toFixed(2) + '%';
+                    },
+                    color: 'black',
+                    font: {
+                        weight: 'bold',
+                        size: 20
+                    },
+                    anchor: 'end',
+                    align: 'start',
+                    offset: 0,
+                    borderRadius: 4,
+                    textAlign: 'center',
+                }
+            }
+        };
 
 
         const canvas3 = createCanvas(400, 400);
@@ -971,10 +1000,14 @@ const options3 = {
             valign: 'center',
         });
 
+
+        const mayorEgreso = egresosData.reduce((max, item) => item.value > max.value ? item : max, egresosData[0]);
+
+
         doc
             .save()
-            .moveTo(ingresosBaseX, y + 450)
-            .lineTo(ingresosBaseX, y + 450 + 300)
+            .moveTo(ingresosBaseX, y + 470)
+            .lineTo(ingresosBaseX, y + 450 + 130)
             .strokeColor('black')
             .lineWidth(1)
             .stroke()
@@ -983,10 +1016,10 @@ const options3 = {
             .fontSize(12)
             .fillColor('black')
             .text(
-                `El gasto anual que genera un mayor impacto es el de anualidades presupuestadas y puedes verte en problemas si no tienes un plan para el pago de estas.`,
+                `El gasto anual que genera un mayor impacto es el de ${mayorEgreso.label.toLowerCase()} y puedes verte en problemas si no tienes un plan para el pago de estas.`,
                 ingresosBaseX + 10,
-                y + 470, {
-                    width: 300,
+                y + 450 + 40, {
+                    width: 280,
                     align: 'justify'
                 }
             );
@@ -994,7 +1027,7 @@ const options3 = {
 
 
 
-        // PAGINA 4 - PATRIMONIO
+        // PAGINA 4 
         doc.addPage();
 
 
@@ -1020,8 +1053,7 @@ const options3 = {
 
         const activosProductivos = +(datosPlan.anualidadesFijas || 0) +
             +(datosPlan.anualidadesVariables || 0) +
-            +(datosPlan.segurosAnuales || 0) +
-            +(datosPlan.planB || 0);
+            +(datosPlan.segurosAnuales || 0);
 
         const activosImproductivos = +(datosPlan.patrimonio || 0);
 
@@ -1038,24 +1070,33 @@ const options3 = {
 
 
         const baseX4 = 150;
-        let currentY4 = 30;
+        let currentY4 = 50;
         const tableWidth4 = 300;
-        const rowHeight4 = 20;
+        const rowHeight4 = 50;
         const Ptexto = 160;
+        const fontSize = 15;
 
-       
+        const verticalPadding = (rowHeight4 - fontSize) / 2;
+        const textY = currentY4 + verticalPadding;
+
         doc.rect(baseX4, currentY4, tableWidth4, rowHeight4).fill('#F9D570');
-        doc.fillColor('black').font('Roboto-Bold')
-            .text('RELACION PASIVOS / ACTIVOS', baseX4 + 10, currentY4 + 5);
+
         doc.fillColor('black')
-            .text(relacionPasivosActivos, baseX4 + Ptexto, currentY4 + 7, {
+            .font('Roboto-Bold')
+            .fontSize(fontSize)
+            .text('RELACION PASIVOS / ACTIVOS', baseX4 + 10, textY);
+
+        doc.fillColor('black')
+            .fontSize(fontSize)
+            .text(relacionPasivosActivos, baseX4 + Ptexto, textY, {
                 width: 130,
                 align: 'right'
             });
-        currentY4 += rowHeight4 + 20;
+
+        currentY4 += rowHeight4 + 30;
 
         const boxHeight4 = 100;
-        doc.rect(baseX4, currentY4, tableWidth4, boxHeight4).strokeColor('#0C596E').lineWidth(1).stroke();
+
 
         let textoExplicativo = '';
 
@@ -1069,21 +1110,42 @@ const options3 = {
             textoExplicativo = 'Cuentas con un nivel de endeudamiento adecuado, vale la pena comenzar muy pronto una estrategia de inversiones.';
         }
 
-        doc.fillColor('black').font('Roboto').fontSize(10)
-            .text(
-                textoExplicativo,
-                baseX4 + 10, currentY4 + 10, {
-                    width: tableWidth4 - 20,
-                    align: 'justify'
-                }
-            );
+        padding = 20;
+
+        const textHeight = doc
+            .font('Roboto')
+            .fontSize(10)
+            .heightOfString(textoExplicativo, {
+                width: tableWidth4 - padding * 2,
+                align: 'justify',
+            });
+
+        const boxHeight2 = textHeight + padding * 2;
+
+        doc
+            .rect(baseX4, currentY4, tableWidth4, boxHeight2)
+            .strokeColor(Blue)
+            .lineWidth(1)
+            .stroke();
+
+        doc
+            .fillColor('black')
+            .font('Roboto')
+            .fontSize(10)
+            .text(textoExplicativo, baseX4 + padding, currentY4 + padding, {
+                width: tableWidth4 - padding * 2,
+                align: 'justify',
+            });
+
 
         let baseX5 = 0;
-        let currentY5 = currentY4 + 100;
+        let currentY5 = currentY4 + 80;
         const tableWidth5 = 300;
         let rowHeight5 = 20;
         const colTipo = 100;
         const colCalif = 60;
+
+        const text6 = 'Riesgos';
 
         doc.rect(baseX5, currentY5 + 40, 350, 40)
             .fillColor(Blue)
@@ -1092,19 +1154,19 @@ const options3 = {
         doc.fillColor('white')
             .fontSize(20);
 
-        const text6 = 'Riesgos';
-
         const textWidth6 = doc.widthOfString(text6);
         const textHeight6 = doc.currentLineHeight();
-        const x6 = baseX5 + (350 - textWidth6) / 2;
-        const y6 = currentY5 + 50;
 
-        doc.text(text6, x6, y6);
+        const x6 = baseX5 + (350 - textWidth6) / 2;
+        const y6 = (currentY5 + 40) + (40 - textHeight6) / 2;
+
+        doc.font("Roboto-Bold").fontSize(20).text(text6, x6, y6);
+
 
         baseX5 = 30;
         currentY5 = currentY4 + 210;
 
-        doc.rect(baseX5, currentY5, tableWidth5, rowHeight5).fill('#1E5A6D');
+        doc.rect(baseX5, currentY5, tableWidth5, rowHeight5).fill(Blue);
         doc.fillColor('white').font('Roboto-Bold').fontSize(10);
         doc.text('Tipo de Riesgo', baseX5 + 5, currentY5 + 5, {
             width: colTipo,
@@ -1123,69 +1185,88 @@ const options3 = {
 
         const riesgos = [{
                 nombre: 'Riesgo vejez',
-                color: datosPlan.planB && parseInt(datosPlan.planB) > 0 ? 'yellow' : 'red',
-                comentario: datosPlan.planB && parseInt(datosPlan.planB) > 0 ?
+                color: datosPlan.planB && datosPlan.planB !== null ? 'yellow' : 'red',
+                comentario: datosPlan.planB && datosPlan.planB !== null ?
                     'Es clave validar si el monto que estás ahorrando para tu pensión realmente te permitirá mantener tu estilo de vida al retirarte. Un buen plan de retiro necesita una base financiera sólida.' : 'No tener un plan B para tu pensión puede poner en riesgo tu bienestar futuro. Comienza a construir desde hoy un ahorro complementario que te permita retirarte con tranquilidad.'
             },
             {
                 nombre: 'Riesgo de Vida',
-                color: datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'Sí' ? 'red' : datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'No' ? 'yellow' : 'green',
+                color: datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'Sí' ?
+                    'red' : datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'No' ?
+                    'yellow' : 'green',
                 comentario: datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'Sí' ?
-                    'No contar con un seguro de vida teniendo hijos puede poner en riesgo la estabilidad financiera de tu familia en caso de una eventualidad. Considera incluirlo dentro de tu planeación financiera cuanto antes.' : datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'No' ?
-                    'Aunque no tengas dependientes o personas a cargo, los seguros de vida pueden ser una herramienta estratégica. Evalúa cómo un seguro puede formar parte de tu estrategia financiera a largo plazo.' : 'Tienes un seguro de vida, lo cual es una excelente base para proteger a tus seres queridos.'
+                    'No contar con un seguro de vida teniendo hijos puede poner en riesgo la estabilidad financiera de tu familia en caso de una eventualidad para mantener la calidad de vida de tus seres queridos si tú llegas a faltar. Considera incluirlo dentro de tu planeación financiera cuanto antes.' : datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'No' ?
+                    'Aunque no tengas dependientes o personas a cargo, los seguros de vida pueden ser una herramienta estratégica. Actualmente existen opciones que no solo brindan protección, sino que también te ayudan a optimizar impuestos y planificar tu pensión. Evalúa cómo un seguro puede formar parte de tu estrategia financiera a largo plazo.' : 'Tienes un seguro de vida, lo cual es una excelente base para proteger a tus seres queridos.'
             },
             {
                 nombre: 'Riesgo de incapacidad',
                 color: datosPlan.seguroIncapacidad === 'Sí' ? 'yellow' : 'red',
                 comentario: datosPlan.seguroIncapacidad === 'Sí' ?
-                    'Revisa las cláusulas de tu seguro de incapacidad o valores de cobertura, ya que a veces esto no es suficiente para protegerte si una enfermedad grave afecta tus finanzas.' : 'Tu capacidad de generar ingresos es uno de tus activos más valiosos. Un seguro de incapacidad te protege si por alguna razón no puedes seguir ejerciendo tu profesión.'
+                    'Revisa las clausulas de tu seguro de incapacidad o valores de cobertura ya que a veces esto no es suficiente para protegerte si una enfermedad grave afecta tus finanzas.' : 'Tu capacidad de generar ingresos es uno de tus activos más valiosos. Un seguro de incapacidad te protege si por alguna razón no puedes seguir ejerciendo tu profesión'
             },
             {
-                nombre: 'Riesgo de vida',
+                nombre: 'Riesgo de salud',
                 color: datosPlan.polizaSalud === 'Sí' ? 'green' : 'yellow',
                 comentario: datosPlan.polizaSalud === 'Sí' ?
-                    '¡Excelente! Contar con un seguro de salud adicional demuestra una planificación financiera inteligente. Esta cobertura te permite acceder a mejores servicios.' : 'Depender únicamente del sistema de salud obligatorio puede no ser suficiente frente a una urgencia o enfermedad de alto costo. Tener una cobertura adicional te da acceso más ágil y de mejor calidad.'
+                    'Excelente! Contar con un seguro de salud adicional demuestra una planificación financiera inteligente. Esta cobertura te permite acceder a mejores servicios.' : 'Depender únicamente del sistema de salud obligatorio puede no ser suficiente frente a una urgencia o una enfermedad de alto costo. Tener una cobertura adicional te da acceso más ágil y de mejor calidad a los servicios médicos. Proteger tu salud también es proteger tus finanzas.'
             },
             {
                 nombre: 'Fondo de emergencia',
                 color: datosPlan.fondoEmergencia === 'Sí' ? 'green' : 'red',
                 comentario: datosPlan.fondoEmergencia === 'Sí' ?
-                    '¡Muy bien! Tener un fondo de emergencia demuestra una excelente gestión financiera. Asegúrate de que ese fondo cubra entre tres y seis meses de tus gastos fijos.' : 'No contar con un fondo de emergencia te deja expuesto a dificultades económicas en caso de imprevistos, como desempleo, enfermedad o una reparación urgente.'
+                    '¡Muy bien! Tener un fondo de emergencia demuestra una excelente gestión financiera. Asegúrate de que ese fondo sea suficiente para cubrir al menos entre tres y seis meses de tus gastos fijos.' : 'No contar con un fondo de emergencia te deja expuesto a dificultades económicas en caso de imprevistos, como desempleo, enfermedad o una reparación urgente.'
             }
         ];
 
-        rowHeight5 = 80;
+
+        rowHeight5 = 30;
 
         riesgos.forEach(r => {
+            const paddingVertical = 10;
+
+            const textHeightNombre = doc.heightOfString(r.nombre, {
+                font: 'Roboto',
+                fontSize: 8,
+                width: colTipo
+            });
+
+            const rowHeight = textHeightNombre + paddingVertical * 2;
 
             doc.fillColor('black')
                 .font('Roboto')
                 .fontSize(8)
-                .text(r.nombre, baseX5 + 5, currentY5 + 2, {
+                .text(r.nombre, baseX5 + 5, currentY5 + rowHeight, {
                     width: colTipo,
-                    height: rowHeight5,
-                    align: 'left',
-                    valign: 'center'
+                    align: 'center'
                 });
 
             let colorFill = r.color === 'green' ? '#4CAF50' :
                 r.color === 'yellow' ? '#FFEB3B' :
                 '#F44336';
 
-            doc.rect(baseX5 + colTipo + 5, currentY5 + 2, colCalif - 10, rowHeight5 - 4).fill(colorFill);
+            const textHeightComentario = doc.heightOfString(r.comentario, {
+                font: 'Roboto',
+                fontSize: 8,
+                width: tableWidth5 - colTipo - colCalif - 10
+            });
 
-            // Comentarios
+            const rowHeightComentario = textHeightComentario + paddingVertical * 2;
+
+            const finalRowHeight = Math.max(rowHeight, rowHeightComentario);
+
+            doc.rect(baseX5 + colTipo + 5, currentY5 + 5, colCalif - 10, finalRowHeight - 5).fill(colorFill);
+
             doc.fillColor('black')
                 .font('Roboto')
                 .fontSize(8)
-                .text(r.comentario, baseX5 + colTipo + colCalif + 5, currentY5 + 2, {
+                .text(r.comentario, baseX5 + colTipo + colCalif + 5, currentY5 + paddingVertical, {
                     width: tableWidth5 - colTipo - colCalif - 10,
-                    height: rowHeight5,
                     align: 'justify'
                 });
 
-            currentY5 += rowHeight5;
+            currentY5 += finalRowHeight;
         });
+
 
 
         const leyendaX = baseX5 + tableWidth5 + 20;
@@ -1210,7 +1291,7 @@ const options3 = {
 
         let alturaTotal = (leyenda.length * (leyendaHeight + espacioEntreItems + 20)) + 30;
 
-        doc.roundedRect(leyendaX - 10, leyendaY - 10, leyendaWidth + 100, alturaTotal, 10).fill(Blue); // Azul fuerte
+        doc.roundedRect(leyendaX - 10, leyendaY - 10, leyendaWidth + 100, alturaTotal, 10).fill(Blue);
 
         doc.fillColor('white')
             .font('Roboto-Bold')
