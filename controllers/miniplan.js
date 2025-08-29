@@ -712,10 +712,11 @@ const procesarMiniPlan = async (req, res) => {
         const ingresosColLabel = ingresosBaseX + 10;
         const ingresosColValue = ingresosBaseX + ingresosTableWidth - 10;
 
+        console.log(datosPlan.anualidadesFijas)
 
-        const ingresosAnuales = (datosPlan.primaAnual || 0) + (datosPlan.bonificacionAnual || 0);
+        const ingresosAnuales = (datosPlan.primaAnual || 0) + (datosPlan.bonificacionesAnuales || 0);
         const segurosVal = (datosPlan.segurosAnuales || 0);
-        const anualidadesVal = (datosPlan.anualidadesPresupuestadas || 0);
+        const anualidadesVal = (datosPlan.anualidadesFijas || 0);
         const impuestosVal = (datosPlan.impuestos || 0);
 
         const totalAnualidades = segurosVal + anualidadesVal + impuestosVal + (datosPlan.anualidadesFijas || 0);
