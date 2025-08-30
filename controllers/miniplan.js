@@ -901,8 +901,12 @@ transcurso del año.`,
                 value: segurosVal
             },
             {
-                label: 'Anualidades',
+                label: 'Anualidades Presupuestadas',
                 value: anualidadesVal
+            },
+             {
+                label: 'Anualidades Fijas',
+                value: datosPlan.anualidadesFijas
             },
             {
                 label: 'Impuestos',
