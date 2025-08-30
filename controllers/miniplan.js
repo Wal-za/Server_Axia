@@ -319,7 +319,7 @@ const procesarMiniPlan = async (req, res) => {
             },
             {
                 label: 'Gastos Personales',
-                value: datosPlan.cuidadoPersonal
+                value: datosPlan.cuidadoPersonal + datosPlan.comidaOficina
             },
             {
                 label: 'Hogar',
@@ -344,7 +344,7 @@ const procesarMiniPlan = async (req, res) => {
             },
             {
                 label: 'Otros',
-                value: datosPlan.otrosGastosMensuales
+                value: datosPlan.otrosGastosMensuales + datosPlan.cursos
             }
         ];
 
@@ -541,17 +541,18 @@ const procesarMiniPlan = async (req, res) => {
         doc.rect(baseX2 + 1, baseY2 + 38, 270, 290).fill("white");
 
         const total = gastos.reduce((acc, item) => acc + item.value, 0);
-
+       
         const colors = [
-            '#faeb61ff',
-            '#f9ae3dff',
-            '#b2b44cff',
-            '#b762c6ff',
-            '#6df443ff',
-            '#61bce6ff',
-            '#959ea2ff',
-            '#f14441ff'
+            '#4a90e2', 
+            '#50e3c2', 
+            '#f5a623', 
+            '#d0021b', 
+            '#8b572a', 
+            '#9b9b9b', 
+            '#7ed321', 
+            '#f8e71c'
         ];
+
 
 
         const usedColors = colors.slice(0, gastos.length);
@@ -575,7 +576,7 @@ const procesarMiniPlan = async (req, res) => {
                     position: 'top',
                     labels: {
                         font: {
-                            color: 'black'
+                            color: 'gray'
                         }
                     }
                 },
@@ -716,7 +717,7 @@ const procesarMiniPlan = async (req, res) => {
 
         const ingresosAnuales = (datosPlan.primaAnual || 0) + (datosPlan.bonificacionesAnuales || 0);
         const segurosVal = (datosPlan.segurosAnuales || 0);
-        const anualidadesVal = (datosPlan.anualidadesFijas || 0);
+        const anualidadesVal = (datosPlan.anualidadesVariables || 0);
         const impuestosVal = (datosPlan.impuestos || 0);
 
         const totalAnualidades = segurosVal + anualidadesVal + impuestosVal + (datosPlan.anualidadesFijas || 0);
@@ -787,6 +788,15 @@ const procesarMiniPlan = async (req, res) => {
         });
         y += alto;
 
+        // Fila para ANUALIDADES FIJAS (nuevo campo)
+        doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('white').stroke();
+        doc.fillColor('black').font('Roboto').text('Anualidades Fijas', ingresosColLabel, y + 7);
+        doc.text(`$ ${formatCurrency(datosPlan.anualidadesFijas)}`, ingresosColValue - 120, y + 7, {
+            width: 110,
+            align: 'right'
+        });
+        y += alto;
+
 
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('white').stroke();
         doc.fillColor('black').text('Impuestos', ingresosColLabel, y + 7);
@@ -826,7 +836,7 @@ const procesarMiniPlan = async (req, res) => {
 
 
 
-        doc.rect(0, y + 50, 450, 150)
+        doc.rect(0, y + 30, 450, 150)
             .lineWidth(1)
             .stroke(Blue);
 
@@ -836,7 +846,7 @@ const procesarMiniPlan = async (req, res) => {
             .text(
                 'Recuerda revisar si tus ingresos anuales cubren tus gastos anuales. Si esto no sucede, vale la pena que provisiones estos gastos, ya que caes en el riesgo de tomar deudas para cubrirlos.',
                 20,
-                y + 60, {
+                y + 40, {
                     width: 410
                 }
             );
