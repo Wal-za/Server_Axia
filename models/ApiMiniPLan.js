@@ -35,11 +35,11 @@ const MiniPlanSchema = new Schema({
   impuestos: { type: Number },
   patrimonio: { type: Number },
 
-  seguroVida: { type: String, enum: ['Sí', 'No'] },
-  tieneHijosDependientes: { type: String, enum: ['Sí', 'No'] },
-  seguroIncapacidad: { type: String, enum: ['Sí', 'No'] },
-  polizaSalud: { type: String, enum: ['Sí', 'No'] },
-  fondoEmergencia: { type: String, enum: ['Sí', 'No'] },
+seguroVida: { type: String, enum: ['Sí', 'No', ''], default: '' },
+tieneHijosDependientes: { type: String, enum: ['Sí', 'No', ''], default: '' },
+seguroIncapacidad: { type: String, enum: ['Sí', 'No', ''], default: '' },
+polizaSalud: { type: String, enum: ['Sí', 'No', ''], default: '' },
+fondoEmergencia: { type: String, enum: ['Sí', 'No', ''], default: '' },
 
   planB: { type: String },
   deuda: { type: Number },
