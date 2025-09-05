@@ -583,10 +583,10 @@ const procesarMiniPlan = async (req, res) => {
     legend: {
         orient: 'horizontal', 
         left: 'center', 
-        top: '10%', 
+        top: '00%', 
         textStyle: {
             fontFamily: 'Roboto',  
-            fontSize: 14,
+            fontSize: 20,
             color: '#555'
         },
         data: filteredData.map(gasto => gasto.label) 
@@ -603,7 +603,7 @@ const procesarMiniPlan = async (req, res) => {
                 return `${percentage.toFixed(2)}%`;
             },
             color: '#000',
-            fontSize: 17,
+            fontSize: 20,
             fontFamily: 'Roboto',  
         },
         labelLine: {
@@ -633,8 +633,8 @@ const procesarMiniPlan = async (req, res) => {
 
         const buffer = canvas.toBuffer('image/png');
 
-        doc.image(buffer, baseX2 - baseX2 +20, baseY2 + 10, {
-            fit: [300, 300],
+        doc.image(buffer, baseX2 - baseX2 +40, baseY2 + 40, {
+            fit: [280, 280],
             align: 'center',
             valign: 'center',
         });
