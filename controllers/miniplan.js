@@ -1,5 +1,6 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
+const echarts = require('echarts');
 const path = require('path');
 const {
     createCanvas
@@ -85,7 +86,7 @@ const procesarMiniPlan = async (req, res) => {
         const datosPlan = nuevoMiniPlan.toObject();
 
 
-        // const datosPlan = normalizarSegunEsquema(datos, MiniPlan.schema);
+        //const datosPlan = normalizarSegunEsquema(datos, MiniPlan.schema);
 
         const gastosMensuales =
             (datosPlan.gastosHogar || 0) +
@@ -538,18 +539,17 @@ const procesarMiniPlan = async (req, res) => {
         );
 
         doc.fontSize(10);
-        doc.rect(baseX2 + 1, baseY2 + 38, 270, 290).fill("white");
 
         const total = gastos.reduce((acc, item) => acc + item.value, 0);
-       
+
         const colors = [
-            '#4a90e2', 
-            '#50e3c2', 
-            '#f5a623', 
-            '#d0021b', 
-            '#8b572a', 
-            '#9b9b9b', 
-            '#7ed321', 
+            '#4a90e2',
+            '#50e3c2',
+            '#f5a623',
+            '#d0021b',
+            '#8b572a',
+            '#9b9b9b',
+            '#7ed321',
             '#f8e71c'
         ];
 
@@ -557,72 +557,81 @@ const procesarMiniPlan = async (req, res) => {
 
         const usedColors = colors.slice(0, gastos.length);
 
-        const canvas = createCanvas(400, 400);
+        const canvas = createCanvas(600, 600);
         const ctx = canvas.getContext('2d');
 
-        const data = {
-            labels: gastos.map(gasto => gasto.label),
-            datasets: [{
-                data: gastos.map(gasto => gasto.value),
-                backgroundColor: usedColors,
-                hoverBackgroundColor: usedColors.map(color => `${color}80`),
-            }],
-        };
+        const filteredData = gastos.filter(gasto => gasto.value > 0);
 
-        const options = {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        font: {
-                            color: 'gray'
-                        }
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            if (total === 0) return `${tooltipItem.label}: 0 (0%)`;
-                            return `${tooltipItem.label}: ${tooltipItem.raw} (${((tooltipItem.raw / total) * 100).toFixed(2)}%)`;
-                        }
-                    }
-                },
-                datalabels: {
-                    formatter: function(value) {
-                        if (total === 0) return null;
-                        const percentage = (value / total) * 100;
-                        if (percentage === 0) return null;
-                        if (Math.round(percentage) === 100) return '100%';
-                        return percentage.toFixed(2) + '%';
-                    },
-                    color: 'black',
-                    font: {
-                        weight: 'bold',
-                        size: 12
-                    },
-                    anchor: 'end',
-                    align: 'start',
-                    offset: 0,
-                    borderRadius: 4,
-                    textAlign: 'center',
+        const data = filteredData.map(gasto => ({
+            name: gasto.label,
+            value: gasto.value
+        }));
+
+        const option = {
+            tooltip: {
+                trigger: 'item',
+                formatter: (params) => {
+                    const percentage = (params.value / total) * 100;
+                    return `${params.name}: ${params.value} (${percentage.toFixed(2)}%)`;
                 }
-            }
+            },
+            legend: {
+                orient: 'horizontal', 
+                left: 'center', 
+                top: '10%', 
+                textStyle: {
+                    fontSize: 14,
+                    color: '#555'
+                },
+                data: filteredData.map(gasto => gasto.label) 
+            },
+            series: [{
+                name: 'Ingresos',
+                type: 'pie',
+                radius: '50%',
+                label: {
+                    show: true,
+                    position: 'outside',
+                    formatter: (params) => {
+                        const percentage = (params.value / total) * 100;
+                        return `${percentage.toFixed(2)}%`;
+                    },
+                    color: '#000',
+                    fontSize: 17
+                },
+                  labelLine: {
+                    show: true,
+                    length: 20,
+                    length2: 10
+                },
+                data: data, 
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: '20',
+                        fontWeight: 'bold',
+                    }
+                },
+                itemStyle: {
+                    borderRadius: 0,
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }
+            }]
         };
 
-        new Chart(ctx, {
-            type: 'pie',
-            data: data,
-            options: options,
-            plugins: [ChartDataLabels],
-        });
+        const myChart = echarts.init(canvas);
+        myChart.setOption(option);
 
         const buffer = canvas.toBuffer('image/png');
-        doc.image(buffer, baseX2, baseY2 + 40, {
-            fit: [250, 250],
+
+        doc.image(buffer, baseX2 - baseX2 +20, baseY2 + 10, {
+            fit: [300, 300],
             align: 'center',
             valign: 'center',
         });
+
+
 
 
         const cuadroAncho2 = 280;
@@ -713,7 +722,6 @@ const procesarMiniPlan = async (req, res) => {
         const ingresosColLabel = ingresosBaseX + 10;
         const ingresosColValue = ingresosBaseX + ingresosTableWidth - 10;
 
-        console.log(datosPlan.anualidadesFijas)
 
         const ingresosAnuales = (datosPlan.primaAnual || 0) + (datosPlan.bonificacionesAnuales || 0);
         const segurosVal = (datosPlan.segurosAnuales || 0);
@@ -788,7 +796,6 @@ const procesarMiniPlan = async (req, res) => {
         });
         y += alto;
 
-        // Fila para ANUALIDADES FIJAS (nuevo campo)
         doc.rect(ingresosBaseX, y, ingresosTableWidth, alto).fill('white').stroke();
         doc.fillColor('black').font('Roboto').text('Anualidades Fijas', ingresosColLabel, y + 7);
         doc.text(`$ ${formatCurrency(datosPlan.anualidadesFijas)}`, ingresosColValue - 120, y + 7, {
@@ -904,7 +911,7 @@ transcurso del año.`,
                 label: 'Anualidades Presupuestadas',
                 value: anualidadesVal
             },
-             {
+            {
                 label: 'Anualidades Fijas',
                 value: datosPlan.anualidadesFijas
             },
@@ -925,92 +932,91 @@ transcurso del año.`,
 
         const total2 = filteredValues.reduce((sum, val) => sum + val, 0);
 
-        const data3 = {
-            labels: filteredLabels,
-            datasets: [{
-                data: filteredValues,
-                backgroundColor: filteredColors,
-                hoverBackgroundColor: filteredColors.map(color => {
-                    if (color.endsWith('00')) {
-                        return color.slice(0, -2) + '80';
-                    }
-                    return `${color}80`;
-                }),
-            }],
-        };
+        const canvas3 = createCanvas(600, 600);
+        const ctx3 = canvas3.getContext('2d');
 
-        const options3 = {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        font: {
-                            size: 16,
-                            color: 'black'
-                        },
-                        generateLabels: function(chart) {
-                            const original = Chart.overrides.pie.plugins.legend.labels.generateLabels;
-                            const labelsOriginal = original.call(this, chart);
-                            labelsOriginal.forEach((label, i) => {
-                                label.fillStyle = legendColors[i];
-                            });
-                            return labelsOriginal;
-                        }
-                    }
+        const data3 = filteredLabels.map((label, i) => ({
+            name: label,
+            value: filteredValues[i],
+            itemStyle: {
+                color: filteredColors[i]
+            }
+        }));
+
+        const option3 = {
+            tooltip: {
+                trigger: 'item',
+                formatter: (params) => {
+                    const percentage = total2 ? ((params.value / total2) * 100).toFixed(2) : '0.00';
+                    return `${params.name}: $${params.value} (${percentage}%)`;
+                }
+            },
+            legend: {
+                orient: 'horizontal',
+                left: 'center',
+                top: '10%',
+                textStyle: {
+                    color: 'gray',
+                    fontSize: 20,
+                    fontFamily: 'Arial',
+                    fontWeight: 'normal',
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            const value = tooltipItem.raw;
-                            const label = tooltipItem.label;
-                            const percentage = total2 ? ((value / total2) * 100).toFixed(2) : '0.00';
-                            return `${label}: $${value} (${percentage}%)`;
-                        }
-                    }
-                },
-                datalabels: {
-                    formatter: function(value) {
-                        const percent = total2 ? (value / total2) * 100 : 0;
-                        if (percent === 0) return null;
+                itemWidth: 20,
+                itemHeight: 15,
+                itemGap: 10,
+                data: filteredLabels.map((label, i) => ({
+                    name: label,
+                    textStyle: {
+                        fontSize: 20,
+                        color: '#555'
+                    },
+                }))
+            },
+            series: [{
+                name: 'Ingresos',
+                type: 'pie',
+                radius: '50%',
+                label: {
+                    show: true,
+                    formatter: (params) => {
+                        const percent = total2 ? (params.value / total2) * 100 : 0;
+                        if (percent === 0) return '';
                         if (Math.round(percent) === 100) return '100%';
                         return percent.toFixed(2) + '%';
                     },
                     color: 'black',
-                    font: {
-                        weight: 'bold',
-                        size: 20
-                    },
-                    anchor: 'end',
-                    align: 'start',
-                    offset: 0,
-                    borderRadius: 4,
-                    textAlign: 'center',
+                    fontSize: 20,
+                    fontWeight: 'normal',
+                    position: 'outside'
+                },
+                labelLine: {
+                    show: true,
+                    length: 20,
+                    length2: 10
+                },
+                data: data3,
+                 emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: '20',
+                        fontWeight: 'bold',
+                    }
+                },
+                itemStyle: {
+                    borderRadius: 0,
+                    borderColor: '#fff',
+                    borderWidth: 0
                 }
-            }
+            }]
         };
 
-
-        const canvas3 = createCanvas(400, 400);
-        const ctx3 = canvas3.getContext('2d');
-
-
-        if (canvas3.chart) {
-            canvas3.chart.destroy();
-        }
-
-
-        canvas3.chart = new Chart(ctx3, {
-            type: 'pie',
-            data: data3,
-            options: options3,
-            plugins: [ChartDataLabels],
-        });
+        const myChart3 = echarts.init(canvas3);
+        myChart3.setOption(option3);
 
         const buffer3 = canvas3.toBuffer('image/png');
 
-        doc.image(buffer3, ingresosBaseX - 220, y + 460, {
-            fit: [180, 180],
+        doc.image(buffer3, ingresosBaseX - ingresosBaseX + 20, y + 430, {
+            fit: [250, 250],
             align: 'center',
             valign: 'center',
         });
