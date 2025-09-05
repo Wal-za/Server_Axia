@@ -2,9 +2,8 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
-const {
-    createCanvas
-} = require('canvas');
+const { createCanvas, registerFont } = require('canvas');
+
 const ChartDataLabels = require('chartjs-plugin-datalabels');
 const {
     Chart,
@@ -18,6 +17,9 @@ const robotoRegularPath = path.join(__dirname, '..', 'fonts', 'Roboto-Regular.tt
 const robotoBoldPath = path.join(__dirname, '..', 'fonts', 'Roboto-Bold.ttf');
 const robotoItalicPath = path.join(__dirname, '..', 'fonts', 'Roboto-Italic.ttf');
 const robotoBoldItalicPath = path.join(__dirname, '..', 'fonts', 'Roboto-BoldItalic.ttf');
+
+registerFont(robotoRegularPath, { family: 'Roboto' });
+
 
 
 const normalizarSegunEsquema = (data, schema) => {
@@ -566,7 +568,7 @@ const procesarMiniPlan = async (req, res) => {
 
        const option = {
     textStyle: {
-        fontFamily: 'Arial, sans-serif',  // Usando fuente genérica
+        fontFamily: 'Roboto',  
     },
     tooltip: {
         trigger: 'item',
@@ -575,7 +577,7 @@ const procesarMiniPlan = async (req, res) => {
             return `${params.name}: ${params.value} (${percentage.toFixed(2)}%)`;
         },
         textStyle: {
-            fontFamily: 'Arial, sans-serif',  // Usando fuente genérica también aquí
+            fontFamily: 'Roboto',  
         },
     },
     legend: {
@@ -583,7 +585,7 @@ const procesarMiniPlan = async (req, res) => {
         left: 'center', 
         top: '10%', 
         textStyle: {
-            fontFamily: 'Arial, sans-serif',  // Usando fuente genérica
+            fontFamily: 'Roboto',  
             fontSize: 14,
             color: '#555'
         },
@@ -602,7 +604,7 @@ const procesarMiniPlan = async (req, res) => {
             },
             color: '#000',
             fontSize: 17,
-            fontFamily: 'Arial, sans-serif',  // Fuente genérica aquí también
+            fontFamily: 'Roboto',  
         },
         labelLine: {
             show: true,
@@ -613,7 +615,7 @@ const procesarMiniPlan = async (req, res) => {
         emphasis: {
             label: {
                 show: true,
-                fontFamily: 'Arial, sans-serif',  // Fuente genérica en énfasis
+                fontFamily: 'Roboto',  
                 fontSize: '20',
                 fontWeight: 'bold',
             }
@@ -949,72 +951,75 @@ transcurso del año.`,
             }
         }));
 
-        const option3 = {
-            tooltip: {
-                trigger: 'item',
-                formatter: (params) => {
-                    const percentage = total2 ? ((params.value / total2) * 100).toFixed(2) : '0.00';
-                    return `${params.name}: $${params.value} (${percentage}%)`;
-                }
+       const option3 = {
+    tooltip: {
+        trigger: 'item',
+        formatter: (params) => {
+            const percentage = total2 ? ((params.value / total2) * 100).toFixed(2) : '0.00';
+            return `${params.name}: $${params.value} (${percentage}%)`;
+        }
+    },
+    legend: {
+        orient: 'horizontal',
+        left: 'center',
+        top: '10%',
+        textStyle: {
+            color: 'gray',
+            fontSize: 20,
+            fontFamily: 'Roboto',  
+            fontWeight: 'normal',
+        },
+        itemWidth: 20,
+        itemHeight: 15,
+        itemGap: 10,
+        data: filteredLabels.map((label, i) => ({
+            name: label,
+            textStyle: {
+                fontSize: 20,
+                color: '#555',
+                fontFamily: 'Roboto',  
             },
-            legend: {
-                orient: 'horizontal',
-                left: 'center',
-                top: '10%',
-                textStyle: {
-                    color: 'gray',
-                    fontSize: 20,
-                    fontFamily: 'Arial',
-                    fontWeight: 'normal',
-                },
-                itemWidth: 20,
-                itemHeight: 15,
-                itemGap: 10,
-                data: filteredLabels.map((label, i) => ({
-                    name: label,
-                    textStyle: {
-                        fontSize: 20,
-                        color: '#555'
-                    },
-                }))
+        }))
+    },
+    series: [{
+        name: 'Ingresos',
+        type: 'pie',
+        radius: '50%',
+        label: {
+            show: true,
+            formatter: (params) => {
+                const percent = total2 ? (params.value / total2) * 100 : 0;
+                if (percent === 0) return '';
+                if (Math.round(percent) === 100) return '100%';
+                return percent.toFixed(2) + '%';
             },
-            series: [{
-                name: 'Ingresos',
-                type: 'pie',
-                radius: '50%',
-                label: {
-                    show: true,
-                    formatter: (params) => {
-                        const percent = total2 ? (params.value / total2) * 100 : 0;
-                        if (percent === 0) return '';
-                        if (Math.round(percent) === 100) return '100%';
-                        return percent.toFixed(2) + '%';
-                    },
-                    color: 'black',
-                    fontSize: 20,
-                    fontWeight: 'normal',
-                    position: 'outside'
-                },
-                labelLine: {
-                    show: true,
-                    length: 20,
-                    length2: 10
-                },
-                data: data3,
-                 emphasis: {
-                    label: {
-                        show: true,
-                        fontSize: '20',
-                        fontWeight: 'bold',
-                    }
-                },
-                itemStyle: {
-                    borderRadius: 0,
-                    borderColor: '#fff',
-                    borderWidth: 0
-                }
-            }]
-        };
+            color: 'black',
+            fontSize: 20,
+            fontWeight: 'normal',
+            position: 'outside',
+            fontFamily: 'Roboto',  
+        },
+        labelLine: {
+            show: true,
+            length: 20,
+            length2: 10
+        },
+        data: data3,
+        emphasis: {
+            label: {
+                show: true,
+                fontSize: '20',
+                fontWeight: 'bold',
+                fontFamily: 'Roboto', 
+            }
+        },
+        itemStyle: {
+            borderRadius: 0,
+            borderColor: '#fff',
+            borderWidth: 0
+        }
+    }]
+};
 
         const myChart3 = echarts.init(canvas3);
         myChart3.setOption(option3);
