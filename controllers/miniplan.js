@@ -111,9 +111,8 @@ const procesarMiniPlan = async (req, res) => {
         doc.registerFont('Roboto', robotoRegularPath);
         doc.registerFont('Roboto-Bold', robotoBoldPath);
         doc.registerFont('Roboto-Italic', robotoItalicPath);
-        doc.registerFont('Roboto-BoldItalic', robotoBoldItalicPath);
+        doc.registerFont('Roboto-BoldItalic', robotoBoldItalicPath);      
 
-      
         const buffers = [];
 
         doc.on('data', buffers.push.bind(buffers));
@@ -564,27 +563,31 @@ const procesarMiniPlan = async (req, res) => {
             name: gasto.label,
             value: gasto.value
         }));
-const option = {
+
+       const option = {
     textStyle: {
-        fontFamily: 'Roboto', // Aquí asignas la fuente personalizada
+        fontFamily: 'Arial, sans-serif',  // Usando fuente genérica
     },
     tooltip: {
         trigger: 'item',
         formatter: (params) => {
             const percentage = (params.value / total) * 100;
             return `${params.name}: ${params.value} (${percentage.toFixed(2)}%)`;
-        }
+        },
+        textStyle: {
+            fontFamily: 'Arial, sans-serif',  // Usando fuente genérica también aquí
+        },
     },
     legend: {
-        orient: 'horizontal',
-        left: 'center',
-        top: '10%',
+        orient: 'horizontal', 
+        left: 'center', 
+        top: '10%', 
         textStyle: {
-            fontFamily: 'Roboto',  // Aquí también
+            fontFamily: 'Arial, sans-serif',  // Usando fuente genérica
             fontSize: 14,
             color: '#555'
         },
-        data: filteredData.map(gasto => gasto.label)
+        data: filteredData.map(gasto => gasto.label) 
     },
     series: [{
         name: 'Ingresos',
@@ -598,18 +601,19 @@ const option = {
                 return `${percentage.toFixed(2)}%`;
             },
             color: '#000',
-            fontSize: 17
+            fontSize: 17,
+            fontFamily: 'Arial, sans-serif',  // Fuente genérica aquí también
         },
         labelLine: {
             show: true,
             length: 20,
             length2: 10
         },
-        data: data,
+        data: data, 
         emphasis: {
             label: {
                 show: true,
-                fontFamily: 'Roboto',  // Asegúrate de que también aquí la fuente esté configurada correctamente
+                fontFamily: 'Arial, sans-serif',  // Fuente genérica en énfasis
                 fontSize: '20',
                 fontWeight: 'bold',
             }
@@ -621,7 +625,6 @@ const option = {
         }
     }]
 };
-
 
         const myChart = echarts.init(canvas);
         myChart.setOption(option);
