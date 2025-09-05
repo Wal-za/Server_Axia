@@ -113,14 +113,7 @@ const procesarMiniPlan = async (req, res) => {
         doc.registerFont('Roboto-Italic', robotoItalicPath);
         doc.registerFont('Roboto-BoldItalic', robotoBoldItalicPath);
 
-        registerFont(robotoRegularPath, { family: 'Roboto' });
-        registerFont(robotoBoldPath, { family: 'Roboto-Bold' });
-        registerFont(robotoItalicPath, { family: 'Roboto-Italic' });
-        registerFont(robotoBoldItalicPath, { family: 'Roboto-BoldItalic' });
-
-
-
-
+      
         const buffers = [];
 
         doc.on('data', buffers.push.bind(buffers));
@@ -571,64 +564,64 @@ const procesarMiniPlan = async (req, res) => {
             name: gasto.label,
             value: gasto.value
         }));
-
-        const option = {
-            textStyle: {
-        fontFamily: 'Roboto',  
+const option = {
+    textStyle: {
+        fontFamily: 'Roboto', // Aquí asignas la fuente personalizada
     },
-            tooltip: {
-                trigger: 'item',
-                formatter: (params) => {
-                    const percentage = (params.value / total) * 100;
-                    return `${params.name}: ${params.value} (${percentage.toFixed(2)}%)`;
-                }
+    tooltip: {
+        trigger: 'item',
+        formatter: (params) => {
+            const percentage = (params.value / total) * 100;
+            return `${params.name}: ${params.value} (${percentage.toFixed(2)}%)`;
+        }
+    },
+    legend: {
+        orient: 'horizontal',
+        left: 'center',
+        top: '10%',
+        textStyle: {
+            fontFamily: 'Roboto',  // Aquí también
+            fontSize: 14,
+            color: '#555'
+        },
+        data: filteredData.map(gasto => gasto.label)
+    },
+    series: [{
+        name: 'Ingresos',
+        type: 'pie',
+        radius: '50%',
+        label: {
+            show: true,
+            position: 'outside',
+            formatter: (params) => {
+                const percentage = (params.value / total) * 100;
+                return `${percentage.toFixed(2)}%`;
             },
-            legend: {
-                orient: 'horizontal', 
-                left: 'center', 
-                top: '10%', 
-                textStyle: {
-                    fontFamily: 'Roboto',  
-                    fontSize: 14,
-                    color: '#555'
-                },
-                data: filteredData.map(gasto => gasto.label) 
-            },
-            series: [{
-                name: 'Ingresos',
-                type: 'pie',
-                radius: '50%',
-                label: {
-                    show: true,
-                    position: 'outside',
-                    formatter: (params) => {
-                        const percentage = (params.value / total) * 100;
-                        return `${percentage.toFixed(2)}%`;
-                    },
-                    color: '#000',
-                    fontSize: 17
-                },
-                  labelLine: {
-                    show: true,
-                    length: 20,
-                    length2: 10
-                },
-                data: data, 
-                emphasis: {
-                    label: {
-                        show: true,
-                        fontFamily: 'Roboto',  
-                        fontSize: '20',
-                        fontWeight: 'bold',
-                    }
-                },
-                itemStyle: {
-                    borderRadius: 0,
-                    borderColor: '#fff',
-                    borderWidth: 1
-                }
-            }]
-        };
+            color: '#000',
+            fontSize: 17
+        },
+        labelLine: {
+            show: true,
+            length: 20,
+            length2: 10
+        },
+        data: data,
+        emphasis: {
+            label: {
+                show: true,
+                fontFamily: 'Roboto',  // Asegúrate de que también aquí la fuente esté configurada correctamente
+                fontSize: '20',
+                fontWeight: 'bold',
+            }
+        },
+        itemStyle: {
+            borderRadius: 0,
+            borderColor: '#fff',
+            borderWidth: 1
+        }
+    }]
+};
+
 
         const myChart = echarts.init(canvas);
         myChart.setOption(option);
