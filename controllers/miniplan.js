@@ -568,6 +568,9 @@ const procesarMiniPlan = async (req, res) => {
         }));
 
         const option = {
+            textStyle: {
+        fontFamily: 'Roboto',  
+    },
             tooltip: {
                 trigger: 'item',
                 formatter: (params) => {
@@ -580,6 +583,7 @@ const procesarMiniPlan = async (req, res) => {
                 left: 'center', 
                 top: '10%', 
                 textStyle: {
+                    fontFamily: 'Roboto',  
                     fontSize: 14,
                     color: '#555'
                 },
@@ -608,6 +612,7 @@ const procesarMiniPlan = async (req, res) => {
                 emphasis: {
                     label: {
                         show: true,
+                        fontFamily: 'Roboto',  
                         fontSize: '20',
                         fontWeight: 'bold',
                     }
