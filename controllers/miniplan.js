@@ -113,6 +113,11 @@ const procesarMiniPlan = async (req, res) => {
         doc.registerFont('Roboto-Italic', robotoItalicPath);
         doc.registerFont('Roboto-BoldItalic', robotoBoldItalicPath);
 
+        registerFont(robotoRegularPath, { family: 'Roboto' });
+        registerFont(robotoBoldPath, { family: 'Roboto-Bold' });
+        registerFont(robotoItalicPath, { family: 'Roboto-Italic' });
+        registerFont(robotoBoldItalicPath, { family: 'Roboto-BoldItalic' });
+
 
 
 
