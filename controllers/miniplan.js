@@ -81,14 +81,14 @@ const procesarMiniPlan = async (req, res) => {
         }
 
         //comentar en pruebas 
-        //const datosNormalizados = normalizarSegunEsquema(datos, MiniPlan.schema);
-       // const nuevoMiniPlan = new MiniPlan(datosNormalizados);
-        //await nuevoMiniPlan.save();
+        const datosNormalizados = normalizarSegunEsquema(datos, MiniPlan.schema);
+        const nuevoMiniPlan = new MiniPlan(datosNormalizados);
+        await nuevoMiniPlan.save();
 
-        //const datosPlan = nuevoMiniPlan.toObject();
+        const datosPlan = nuevoMiniPlan.toObject();
 
 
-        const datosPlan = normalizarSegunEsquema(datos, MiniPlan.schema);
+        //const datosPlan = normalizarSegunEsquema(datos, MiniPlan.schema);
 
         const gastosMensuales =
             (datosPlan.gastosHogar || 0) +
