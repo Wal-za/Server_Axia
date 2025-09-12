@@ -3,11 +3,10 @@ const cors = require('cors');
 require('dotenv').config();
 
 // Importar la función de conexión a la base de datos
-const connectDB = require('./dbConnection'); // Asegúrate de que la ruta es correcta
+const connectDB = require('./dbConnection'); 
 
 // Importar las rutas
-const clienteRoutes = require('./routes/clienteAxiaRoutes'); // Asegúrate de que la ruta es correcta
-
+const clienteRoutes = require('./routes/clienteAxiaRoutes'); 
 const app = express();
 
 // Middleware
@@ -15,10 +14,10 @@ app.use(cors());
 app.use(express.json());
 
 // Conectar a la base de datos usando la función importada
-connectDB(); // Esta función debe encargarse de la conexión
+connectDB(); 
 
 // Rutas
-app.use('/api', clienteRoutes); // Prefijo /api para todas las rutas de cliente
+app.use('/api', clienteRoutes); 
 
 // Ruta de prueba
 app.get('/', (req, res) => {

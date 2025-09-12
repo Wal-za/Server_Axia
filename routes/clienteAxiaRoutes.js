@@ -8,6 +8,8 @@ const actualizarCliente = require('../controllers/actualizarcliente');
 const obtenerFieldset = require('../controllers/fieldset');
 const getAllClientes = require('../controllers/GetAllClientes');
 const { procesarMiniPlan } = require('../controllers/miniplan');
+const { exportarClientes } = require('../controllers/exportarClientesController');
+
 
 // Ruta para crear un nuevo cliente
 router.post('/clientes', crearCliente);
@@ -27,6 +29,10 @@ router.get('/cliente/:cedula/fieldset', obtenerFieldset);
 
 //Ruta Mini Plan Financiero
 router.post('/miniplan', procesarMiniPlan);
+
+//Ruta Mini Plan Financiero Descargar datos
+router.get('/ClienteAxias', exportarClientes);
+
 
 // ✅ Ruta keepalive para mantener el servidor activo
 router.get('/keepalive', (req, res) => {
