@@ -2,7 +2,12 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
-const { createCanvas, registerFont } = require('canvas');
+const {
+    createCanvas,
+    registerFont
+} = require('canvas');
+const nodemailer = require('nodemailer');
+
 
 const ChartDataLabels = require('chartjs-plugin-datalabels');
 const {
@@ -18,7 +23,9 @@ const robotoBoldPath = path.join(__dirname, '..', 'fonts', 'Roboto-Bold.ttf');
 const robotoItalicPath = path.join(__dirname, '..', 'fonts', 'Roboto-Italic.ttf');
 const robotoBoldItalicPath = path.join(__dirname, '..', 'fonts', 'Roboto-BoldItalic.ttf');
 
-registerFont(robotoRegularPath, { family: 'Roboto' });
+registerFont(robotoRegularPath, {
+    family: 'Roboto'
+});
 
 
 
@@ -84,9 +91,7 @@ const procesarMiniPlan = async (req, res) => {
         const datosNormalizados = normalizarSegunEsquema(datos, MiniPlan.schema);
         const nuevoMiniPlan = new MiniPlan(datosNormalizados);
         await nuevoMiniPlan.save();
-
         const datosPlan = nuevoMiniPlan.toObject();
-
 
         //const datosPlan = normalizarSegunEsquema(datos, MiniPlan.schema);
 
@@ -113,13 +118,21 @@ const procesarMiniPlan = async (req, res) => {
         doc.registerFont('Roboto', robotoRegularPath);
         doc.registerFont('Roboto-Bold', robotoBoldPath);
         doc.registerFont('Roboto-Italic', robotoItalicPath);
-        doc.registerFont('Roboto-BoldItalic', robotoBoldItalicPath);      
+        doc.registerFont('Roboto-BoldItalic', robotoBoldItalicPath);
 
         const buffers = [];
 
         doc.on('data', buffers.push.bind(buffers));
-        doc.on('end', () => {
+        doc.on('end', async () => {
             const pdfData = Buffer.concat(buffers);
+
+            try {
+                await enviarCorreoConPDF(datosPlan, pdfData);
+                console.log('Correo enviado con éxito');
+            } catch (error) {
+                console.error('Error al enviar correo:', error);
+            }
+
             res.set({
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': 'inline; filename="pagina1.pdf"',
@@ -127,6 +140,61 @@ const procesarMiniPlan = async (req, res) => {
             });
             res.send(pdfData);
         });
+
+
+
+
+        const nodemailer = require('nodemailer');
+
+        async function enviarCorreoConPDF(datos, pdfBuffer) {
+            const {
+                nombre,
+                email,
+                celular,
+                recomendadoPor
+            } = datos;
+
+            const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
+
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'teamtoriiapp@gmail.com',
+                    pass: 'smup asae jtrk izni',
+                },
+            });
+
+            const mailOptions = {
+                from: '"<teamtoriiapp@Axia.com>',
+                to: 'daniel94cruz@gmail.com',
+                subject: `Nuevo formulario de ${nombre}`,
+                html: `
+            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <h2 style="color: #004aad;">📄 Nuevo Formulario Recibido</h2>
+                <p><strong>Nombre:</strong> ${nombre}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Celular:</strong> ${celular}</p>
+                <p><strong>Recomendado por:</strong> ${recomendadoPor}</p>
+                <p>Se adjunta el formulario en formato PDF.</p>
+            </div>
+        `,
+                attachments: [{
+                    filename: `MiniPlan${nombreLimpio}.pdf`,
+                    content: pdfBuffer,
+                    contentType: 'application/pdf',
+                }, ],
+            };
+
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log(`✅ Correo enviado correctamente para ${nombre}`);
+            } catch (error) {
+                console.error(`❌ Error al enviar el correo:`, error);
+                throw error;
+            }
+        }
+
+
 
 
         const fondoPath = path.join(__dirname, 'assets', 'Axia_PPT.png');
@@ -566,74 +634,74 @@ const procesarMiniPlan = async (req, res) => {
             value: gasto.value
         }));
 
-       const option = {
-    textStyle: {
-        fontFamily: 'Roboto',  
-    },
-    tooltip: {
-        trigger: 'item',
-        formatter: (params) => {
-            const percentage = (params.value / total) * 100;
-            return `${params.name}: ${params.value} (${percentage.toFixed(2)}%)`;
-        },
-        textStyle: {
-            fontFamily: 'Roboto',  
-        },
-    },
-    legend: {
-        orient: 'horizontal', 
-        left: 'center', 
-        top: '00%', 
-        textStyle: {
-            fontFamily: 'Roboto',  
-            fontSize: 20,
-            color: '#555'
-        },
-        data: filteredData.map(gasto => gasto.label) 
-    },
-    series: [{
-        name: 'Ingresos',
-        type: 'pie',
-        radius: '50%',
-        label: {
-            show: true,
-            position: 'outside',
-            formatter: (params) => {
-                const percentage = (params.value / total) * 100;
-                return `${percentage.toFixed(2)}%`;
+        const option = {
+            textStyle: {
+                fontFamily: 'Roboto',
             },
-            color: '#000',
-            fontSize: 20,
-            fontFamily: 'Roboto',  
-        },
-        labelLine: {
-            show: true,
-            length: 20,
-            length2: 10
-        },
-        data: data, 
-        emphasis: {
-            label: {
-                show: true,
-                fontFamily: 'Roboto',  
-                fontSize: '20',
-                fontWeight: 'bold',
-            }
-        },
-        itemStyle: {
-            borderRadius: 0,
-            borderColor: '#fff',
-            borderWidth: 1
-        }
-    }]
-};
+            tooltip: {
+                trigger: 'item',
+                formatter: (params) => {
+                    const percentage = (params.value / total) * 100;
+                    return `${params.name}: ${params.value} (${percentage.toFixed(2)}%)`;
+                },
+                textStyle: {
+                    fontFamily: 'Roboto',
+                },
+            },
+            legend: {
+                orient: 'horizontal',
+                left: 'center',
+                top: '00%',
+                textStyle: {
+                    fontFamily: 'Roboto',
+                    fontSize: 20,
+                    color: '#555'
+                },
+                data: filteredData.map(gasto => gasto.label)
+            },
+            series: [{
+                name: 'Ingresos',
+                type: 'pie',
+                radius: '50%',
+                label: {
+                    show: true,
+                    position: 'outside',
+                    formatter: (params) => {
+                        const percentage = (params.value / total) * 100;
+                        return `${percentage.toFixed(2)}%`;
+                    },
+                    color: '#000',
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                },
+                labelLine: {
+                    show: true,
+                    length: 20,
+                    length2: 10
+                },
+                data: data,
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontFamily: 'Roboto',
+                        fontSize: '20',
+                        fontWeight: 'bold',
+                    }
+                },
+                itemStyle: {
+                    borderRadius: 0,
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }
+            }]
+        };
 
         const myChart = echarts.init(canvas);
         myChart.setOption(option);
 
         const buffer = canvas.toBuffer('image/png');
 
-        doc.image(buffer, baseX2 - baseX2 +40, baseY2 + 40, {
+        doc.image(buffer, baseX2 - baseX2 + 40, baseY2 + 40, {
             fit: [280, 280],
             align: 'center',
             valign: 'center',
@@ -951,75 +1019,75 @@ transcurso del año.`,
             }
         }));
 
-       const option3 = {
-    tooltip: {
-        trigger: 'item',
-        formatter: (params) => {
-            const percentage = total2 ? ((params.value / total2) * 100).toFixed(2) : '0.00';
-            return `${params.name}: $${params.value} (${percentage}%)`;
-        }
-    },
-    legend: {
-        orient: 'horizontal',
-        left: 'center',
-        top: '10%',
-        textStyle: {
-            color: 'gray',
-            fontSize: 20,
-            fontFamily: 'Roboto',  
-            fontWeight: 'normal',
-        },
-        itemWidth: 20,
-        itemHeight: 15,
-        itemGap: 10,
-        data: filteredLabels.map((label, i) => ({
-            name: label,
-            textStyle: {
-                fontSize: 20,
-                color: '#555',
-                fontFamily: 'Roboto',  
+        const option3 = {
+            tooltip: {
+                trigger: 'item',
+                formatter: (params) => {
+                    const percentage = total2 ? ((params.value / total2) * 100).toFixed(2) : '0.00';
+                    return `${params.name}: $${params.value} (${percentage}%)`;
+                }
             },
-        }))
-    },
-    series: [{
-        name: 'Ingresos',
-        type: 'pie',
-        radius: '50%',
-        label: {
-            show: true,
-            formatter: (params) => {
-                const percent = total2 ? (params.value / total2) * 100 : 0;
-                if (percent === 0) return '';
-                if (Math.round(percent) === 100) return '100%';
-                return percent.toFixed(2) + '%';
+            legend: {
+                orient: 'horizontal',
+                left: 'center',
+                top: '10%',
+                textStyle: {
+                    color: 'gray',
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                    fontWeight: 'normal',
+                },
+                itemWidth: 20,
+                itemHeight: 15,
+                itemGap: 10,
+                data: filteredLabels.map((label, i) => ({
+                    name: label,
+                    textStyle: {
+                        fontSize: 20,
+                        color: '#555',
+                        fontFamily: 'Roboto',
+                    },
+                }))
             },
-            color: 'black',
-            fontSize: 20,
-            fontWeight: 'normal',
-            position: 'outside',
-            fontFamily: 'Roboto',  
-        },
-        labelLine: {
-            show: true,
-            length: 20,
-            length2: 10
-        },
-        data: data3,
-        emphasis: {
-            label: {
-                show: true,
-                fontSize: '20',
-                fontWeight: 'bold',
-                fontFamily: 'Roboto', 
-            }
-        },
-        itemStyle: {
-            borderRadius: 0,
-            borderColor: '#fff',
-            borderWidth: 0
-        }
-    }]
-};
+            series: [{
+                name: 'Ingresos',
+                type: 'pie',
+                radius: '50%',
+                label: {
+                    show: true,
+                    formatter: (params) => {
+                        const percent = total2 ? (params.value / total2) * 100 : 0;
+                        if (percent === 0) return '';
+                        if (Math.round(percent) === 100) return '100%';
+                        return percent.toFixed(2) + '%';
+                    },
+                    color: 'black',
+                    fontSize: 20,
+                    fontWeight: 'normal',
+                    position: 'outside',
+                    fontFamily: 'Roboto',
+                },
+                labelLine: {
+                    show: true,
+                    length: 20,
+                    length2: 10
+                },
+                data: data3,
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: '20',
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto',
+                    }
+                },
+                itemStyle: {
+                    borderRadius: 0,
+                    borderColor: '#fff',
+                    borderWidth: 0
+                }
+            }]
+        };
 
         const myChart3 = echarts.init(canvas3);
         myChart3.setOption(option3);

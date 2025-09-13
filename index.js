@@ -26,6 +26,10 @@ app.get('/', (req, res) => {
 
 const port = process.env.PORT || 3001;
 
+//Comentar en producción
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+
 app.listen(port, () => {
   console.log(`Servidor corriendo en el puerto ${port}`);
 });
