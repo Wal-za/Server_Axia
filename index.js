@@ -13,6 +13,12 @@ app.use(express.json());
 // Conectar base de datos
 connectDB();
 
+app.use(cors({
+  origin: '*', // 👈 Esto permite cualquier origen (solo en desarrollo)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Rutas
 app.use('/api', clienteRoutes);
 
