@@ -8,7 +8,6 @@ const {
 } = require('canvas');
 const nodemailer = require('nodemailer');
 
-
 const ChartDataLabels = require('chartjs-plugin-datalabels');
 const {
     Chart,
@@ -144,7 +143,6 @@ const procesarMiniPlan = async (req, res) => {
 
 
 
-        const nodemailer = require('nodemailer');
 
         async function enviarCorreoConPDF(datos, pdfBuffer) {
             const {
