@@ -1,38 +1,35 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const connectDB = require('./dbConnection');
-const clienteRoutes = require('./routes/clienteAxiaRoutes');
-const serverless = require('serverless-http');
 
+// Importar la función de conexión a la base de datos
+const connectDB = require('./dbConnection'); 
+
+// Importar las rutas
+const clienteRoutes = require('./routes/clienteAxiaRoutes'); 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Conectar base de datos
-connectDB();
-
-app.use(cors({
-  origin: '*', // 👈 Esto permite cualquier origen (solo en desarrollo)
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Conectar a la base de datos usando la función importada
+connectDB(); 
 
 // Rutas
-app.use('/api', clienteRoutes);
+app.use('/api', clienteRoutes); 
 
+// Ruta de prueba
 app.get('/', (req, res) => {
   res.send('Servidor funcionando');
 });
 
-if (process.env.NODE_ENV === 'production') {
-  // En producción (Vercel), exportamos la app como función serverless
-  module.exports = serverless(app);
-} else {
-  // En desarrollo local, levantamos el servidor normalmente
-  const port = process.env.PORT || 3001;
-  app.listen(port, () => {
-    console.log(`Servidor corriendo en el puerto ${port}`);
-  });
-}
+const port = process.env.PORT || 3001;
+
+//Comentar en producción
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+
+app.listen(port, () => {
+  console.log(`Servidor corriendo en el puerto ${port}`);
+});
