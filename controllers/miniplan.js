@@ -125,12 +125,7 @@ const procesarMiniPlan = async (req, res) => {
         doc.on('end', async () => {
             const pdfData = Buffer.concat(buffers);
 
-            try {
-                await enviarCorreoConPDF(datosPlan, pdfData);
-                console.log('Correo enviado con éxito');
-            } catch (error) {
-                console.error('Error al enviar correo:', error);
-            }
+            enviarCorreoConPDF(datosPlan, pdfData);
 
             res.set({
                 'Content-Type': 'application/pdf',
@@ -140,10 +135,6 @@ const procesarMiniPlan = async (req, res) => {
             res.send(pdfData);
         });
 
-
-
-
-/*
         async function enviarCorreoConPDF(datos, pdfBuffer) {
             const {
                 nombre,
@@ -151,7 +142,6 @@ const procesarMiniPlan = async (req, res) => {
                 celular,
                 recomendadoPor
             } = datos;
-
             const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
 
             const transporter = nodemailer.createTransport({
@@ -167,20 +157,20 @@ const procesarMiniPlan = async (req, res) => {
                 to: 'dz677806@gmail.com',
                 subject: `Nuevo formulario de ${nombre}`,
                 html: `
-            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-                <h2 style="color: #004aad;">📄 Nuevo Formulario Recibido</h2>
-                <p><strong>Nombre:</strong> ${nombre}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Celular:</strong> ${celular}</p>
-                <p><strong>Recomendado por:</strong> ${recomendadoPor}</p>
-                <p>Se adjunta el formulario en formato PDF.</p>
-            </div>
-        `,
+                    <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                        <h2 style="color: #004aad;">📄 Nuevo Formulario Recibido</h2>
+                        <p><strong>Nombre:</strong> ${nombre}</p>
+                        <p><strong>Email:</strong> ${email}</p>
+                        <p><strong>Celular:</strong> ${celular}</p>
+                        <p><strong>Recomendado por:</strong> ${recomendadoPor}</p>
+                        <p>Se adjunta el formulario en formato PDF.</p>
+                    </div>
+                `,
                 attachments: [{
                     filename: `MiniPlan${nombreLimpio}.pdf`,
                     content: pdfBuffer,
                     contentType: 'application/pdf',
-                }, ],
+                }],
             };
 
             try {
@@ -188,12 +178,8 @@ const procesarMiniPlan = async (req, res) => {
                 console.log(`✅ Correo enviado correctamente para ${nombre}`);
             } catch (error) {
                 console.error(`❌ Error al enviar el correo:`, error);
-                throw error;
             }
         }
-
-*/
-
 
         const fondoPath = path.join(__dirname, 'assets', 'Axia_PPT.png');
         if (fs.existsSync(fondoPath)) {
