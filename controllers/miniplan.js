@@ -143,7 +143,7 @@ const procesarMiniPlan = async (req, res) => {
 
 
 
-
+/*
         async function enviarCorreoConPDF(datos, pdfBuffer) {
             const {
                 nombre,
@@ -192,7 +192,7 @@ const procesarMiniPlan = async (req, res) => {
             }
         }
 
-
+*/
 
 
         const fondoPath = path.join(__dirname, 'assets', 'Axia_PPT.png');
