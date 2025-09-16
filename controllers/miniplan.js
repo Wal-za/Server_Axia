@@ -138,21 +138,50 @@ const procesarMiniPlan = async (req, res) => {
         });
 
 
+
+/**
+ * 🔧 Optimiza el PDF sin alterar su diseño visual.
+ */
+async function optimizarPDFSinPerderDiseño(pdfBufferOriginal) {
+    const pdfDoc = await PDFDocument.load(pdfBufferOriginal, { updateMetadata: true });
+
+    // Limpieza de metadatos innecesarios
+    pdfDoc.setTitle('');
+    pdfDoc.setAuthor('');
+    pdfDoc.setSubject('');
+    pdfDoc.setKeywords([]);
+    pdfDoc.setProducer('');
+    pdfDoc.setCreator('');
+
+    // Guarda con estructura más simple
+    const pdfBufferOptimizado = await pdfDoc.save({
+        useObjectStreams: false,
+    });
+
+    return pdfBufferOptimizado;
+}
+
+/**
+ * 📬 Envía un correo con PDF optimizado como archivo adjunto.
+ */
 async function enviarCorreoConPDF(datos, pdfBuffer) {
     const { nombre, email, celular, recomendadoPor } = datos;
-
     const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
 
     console.log("🔹 Datos recibidos:");
     console.log(`Nombre: ${nombre}, Email: ${email}, Celular: ${celular}, Recomendado por: ${recomendadoPor}`);
 
     console.log("🔹 Verificando PDF Buffer...");
-    console.log("¿Es buffer válido? ", Buffer.isBuffer(pdfBuffer));
-    console.log("Tamaño del PDF Buffer:", pdfBuffer.length, "bytes");
-
     if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
         throw new Error("❌ El buffer del PDF no es válido o está vacío.");
     }
+
+    console.log("🔹 Tamaño original del PDF:", pdfBuffer.length, "bytes");
+
+    // 🔧 Optimizar el PDF
+    const pdfBufferOptimizado = await optimizarPDFSinPerderDiseño(pdfBuffer);
+
+    console.log("✅ Tamaño optimizado del PDF:", pdfBufferOptimizado.length, "bytes");
 
     console.log("🔹 Configurando transporter...");
     const transporter = nodemailer.createTransport({
@@ -164,13 +193,13 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
             pass: 'smup asae jtrk izni',
         },
         tls: {
-            rejectUnauthorized: false 
-        },        
+            rejectUnauthorized: false,
+        },
     });
 
     const mailOptions = {
         from: '"Team Torii 👤" <teamtoriiapp@gmail.com>',
-        to: 'daniel94cruz@gmail.com', 
+        to: 'daniel94cruz@gmail.com',
         subject: `Nuevo formulario de ${nombre}`,
         html: `
             <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
@@ -182,7 +211,13 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
                 <p>Se adjunta el formulario en formato PDF.</p>
             </div>
         `,
-       
+        attachments: [
+            {
+                filename: `MiniPlan_${nombreLimpio}.pdf`,
+                content: pdfBufferOptimizado,
+                contentType: 'application/pdf',
+            }
+        ],
     };
 
     try {
@@ -195,7 +230,7 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
     } catch (error) {
         console.error("❌ Error al enviar el correo:");
         console.error(error.stack || error.message || error);
-        // No lanzamos error para evitar que la app se caiga
+        // No lanzamos el error para evitar que la app se caiga
     }
 }
 
