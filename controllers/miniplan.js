@@ -138,45 +138,39 @@ const procesarMiniPlan = async (req, res) => {
         });
 
 
-
-
 async function enviarCorreoConPDF(datos, pdfBuffer) {
     const { nombre, email, celular, recomendadoPor } = datos;
 
     const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
 
-    console.log("🔹 Datos del formulario:");
-    console.table({
-        Nombre: nombre,
-        Email: email,
-        Celular: celular,
-        RecomendadoPor: recomendadoPor
-    });
+    console.log("🔹 Datos recibidos:");
+    console.log(`Nombre: ${nombre}, Email: ${email}, Celular: ${celular}, Recomendado por: ${recomendadoPor}`);
+
+    console.log("🔹 Verificando PDF Buffer...");
+    console.log("¿Es buffer válido? ", Buffer.isBuffer(pdfBuffer));
+    console.log("Tamaño del PDF Buffer:", pdfBuffer.length, "bytes");
 
     if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
         throw new Error("❌ El buffer del PDF no es válido o está vacío.");
     }
 
-    console.log(`🔹 PDF válido detectado (${pdfBuffer.length} bytes)`);
-
-    console.log("🔹 Configurando conexión SMTP...");
-
+    console.log("🔹 Configurando transporter...");
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
-        port: 587,
+        port: 465,
         secure: true,
         auth: {
             user: 'teamtoriiapp@gmail.com',
-            pass: 'smup asae jtrk izni', 
+            pass: 'smup asae jtrk izni',
         },
-        connectionTimeout: 8000, 
-        greetingTimeout: 5000,
-        socketTimeout: 10000,
+        tls: {
+            rejectUnauthorized: false 
+        },        
     });
 
     const mailOptions = {
         from: '"Team Torii 👤" <teamtoriiapp@gmail.com>',
-        to: 'dz677806@gmail.com',
+        to: 'daniel94cruz@gmail.com', 
         subject: `Nuevo formulario de ${nombre}`,
         html: `
             <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
@@ -188,21 +182,24 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
                 <p>Se adjunta el formulario en formato PDF.</p>
             </div>
         `,
-        
+        attachments: [{
+            filename: `MiniPlan_${nombreLimpio}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+        }],
     };
 
     try {
         console.log("🚀 Enviando correo...");
-
         const info = await transporter.sendMail(mailOptions);
 
         console.log("✅ Correo enviado con éxito:");
         console.log(`📨 ID de mensaje: ${info.messageId}`);
-        console.log(`📬 Respuesta del servidor: ${info.response}`);
+        console.log(`📬 Respuesta: ${info.response}`);
     } catch (error) {
         console.error("❌ Error al enviar el correo:");
         console.error(error.stack || error.message || error);
-        throw new Error("No se pudo enviar el correo: " + (error.message || error));
+        // No lanzamos error para evitar que la app se caiga
     }
 }
 
