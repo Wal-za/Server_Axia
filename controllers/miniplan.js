@@ -154,7 +154,6 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
         throw new Error("❌ El buffer del PDF no es válido o está vacío.");
     }
 
-    // Crear el transporter
     console.log("🔹 Configurando transporter...");
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
@@ -165,15 +164,14 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
             pass: 'smup asae jtrk izni',
         },
         tls: {
-            rejectUnauthorized: false // ⚠️ Solo en desarrollo
+            rejectUnauthorized: false 
         },
-        connectionTimeout: 15000, // 15 segundos de timeout
+        connectionTimeout: 15000, 
     });
 
-    // Opciones del correo
     const mailOptions = {
         from: '"Team Torii 👤" <teamtoriiapp@gmail.com>',
-        to: 'dz677806@gmail.com', // Cambia si quieres testear con otro correo
+        to: 'daniel94cruz@gmail.com', 
         subject: `Nuevo formulario de ${nombre}`,
         html: `
             <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
