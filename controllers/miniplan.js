@@ -182,11 +182,7 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
                 <p>Se adjunta el formulario en formato PDF.</p>
             </div>
         `,
-        attachments: [{
-            filename: `MiniPlan_${nombreLimpio}.pdf`,
-            content: pdfBuffer,
-            contentType: 'application/pdf',
-        }],
+       
     };
 
     try {
