@@ -1,4 +1,6 @@
-const PDFDocument = require('pdfkit');
+const PDFKitDocument  = require('pdfkit');
+const { PDFDocument } = require('pdf-lib');
+
 const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
@@ -109,7 +111,7 @@ const procesarMiniPlan = async (req, res) => {
 
         const formulaLibertad = (gastosMensuales * 12) / 0.06;
 
-        const doc = new PDFDocument({
+        const doc = new PDFKitDocument ({
             margin: 0,
             size: 'A4'
         });
