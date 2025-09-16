@@ -171,7 +171,7 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
 
     const mailOptions = {
         from: '"Team Torii 👤" <teamtoriiapp@gmail.com>',
-        to: 'daniel94cruz@gmail.com', 
+        to: 'dz677806@gmail.com', 
         subject: `Nuevo formulario de ${nombre}`,
         html: `
             <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
