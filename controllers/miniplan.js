@@ -1,5 +1,4 @@
 const PDFDocument = require('pdfkit');
-const { PDFDocument } = require('pdf-lib');
 const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
