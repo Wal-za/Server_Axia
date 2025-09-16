@@ -1,4 +1,5 @@
 const PDFDocument = require('pdfkit');
+const { PDFDocument } = require('pdf-lib');
 const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
@@ -140,7 +141,27 @@ const procesarMiniPlan = async (req, res) => {
 
 
 
-function enviarCorreoConPDF(datos, pdfBuffer) {
+
+
+async function comprimirPDF(pdfBufferOriginal) {
+    console.log("📦 Comprimendo PDF...");
+
+    const pdfDoc = await PDFDocument.load(pdfBufferOriginal);
+    const nuevoPDF = await PDFDocument.create();
+
+    const paginas = await nuevoPDF.copyPages(pdfDoc, pdfDoc.getPageIndices());
+    paginas.forEach((pagina) => nuevoPDF.addPage(pagina));
+
+    // Exportar con compresión ligera
+    const pdfBufferComprimido = await nuevoPDF.save({ useObjectStreams: false });
+
+    console.log(`🔧 Tamaño original: ${(pdfBufferOriginal.length / 1024 / 1024).toFixed(2)} MB`);
+    console.log(`✅ Tamaño comprimido: ${(pdfBufferComprimido.length / 1024 / 1024).toFixed(2)} MB`);
+
+    return pdfBufferComprimido;
+}
+
+async function enviarCorreoConPDF(datos, pdfBufferOriginal) {
     const { nombre, email, celular, recomendadoPor } = datos;
     const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
 
@@ -152,11 +173,15 @@ function enviarCorreoConPDF(datos, pdfBuffer) {
         RecomendadoPor: recomendadoPor
     });
 
-    if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
+    if (!Buffer.isBuffer(pdfBufferOriginal) || pdfBufferOriginal.length === 0) {
         throw new Error("❌ El buffer del PDF no es válido o está vacío.");
     }
 
-    console.log(`🔹 PDF válido detectado (${pdfBuffer.length} bytes)`);
+    console.log(`🔹 PDF válido detectado (${(pdfBufferOriginal.length / 1024 / 1024).toFixed(2)} MB)`);
+
+    // Comprimir PDF
+    const pdfBuffer = await comprimirPDF(pdfBufferOriginal);
+
     console.log("🔹 Configurando conexión SMTP...");
 
     const transporter = nodemailer.createTransport({
@@ -167,9 +192,9 @@ function enviarCorreoConPDF(datos, pdfBuffer) {
             user: 'teamtoriiapp@gmail.com',
             pass: 'smup asae jtrk izni',
         },
-        connectionTimeout: 8000,
-        greetingTimeout: 5000,
-        socketTimeout: 10000,
+        connectionTimeout: 20000,
+        greetingTimeout: 20000,
+        socketTimeout: 20000,
     });
 
     const mailOptions = {
@@ -195,20 +220,19 @@ function enviarCorreoConPDF(datos, pdfBuffer) {
         ],
     };
 
-    console.log("🚀 Enviando correo...");
+    try {
+        console.log("🚀 Enviando correo...");
 
-    transporter.sendMail(mailOptions)
-        .then(info => {
-            console.log("✅ Correo enviado con éxito:");
-            console.log(`📨 ID de mensaje: ${info.messageId}`);
-            console.log(`📬 Respuesta del servidor: ${info.response}`);
-        })
-        .catch(error => {
-            console.error("❌ Error al enviar el correo:");
-            console.error(error.stack || error.message || error);
-        });
+        const info = await transporter.sendMail(mailOptions);
 
-    // La función termina aquí, sin esperar a que el correo se envíe.
+        console.log("✅ Correo enviado con éxito:");
+        console.log(`📨 ID de mensaje: ${info.messageId}`);
+        console.log(`📬 Respuesta del servidor: ${info.response}`);
+    } catch (error) {
+        console.error("❌ Error al enviar el correo:");
+        console.error(error.stack || error.message || error);
+        throw new Error("No se pudo enviar el correo: " + (error.message || error));
+    }
 }
 
 
