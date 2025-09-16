@@ -30,6 +30,7 @@
     "nodemon": "^3.1.0",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.17.1",
+    "resend": "^6.1.0",
     "serverless-http": "^4.0.0",
     "typeface-roboto": "^1.1.13",
     "vercel": "^34.2.5",

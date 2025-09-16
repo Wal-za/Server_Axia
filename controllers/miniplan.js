@@ -8,6 +8,7 @@ const {
 } = require('canvas');
 const nodemailer = require('nodemailer');
 
+
 const ChartDataLabels = require('chartjs-plugin-datalabels');
 const {
     Chart,
@@ -125,7 +126,8 @@ const procesarMiniPlan = async (req, res) => {
         doc.on('end', async () => {
             const pdfData = Buffer.concat(buffers);
 
-            enviarCorreoConPDF(datosPlan, pdfData);
+             enviarCorreoConPDF(datosPlan, pdfData);
+            
 
             res.set({
                 'Content-Type': 'application/pdf',
@@ -135,51 +137,63 @@ const procesarMiniPlan = async (req, res) => {
             res.send(pdfData);
         });
 
-        async function enviarCorreoConPDF(datos, pdfBuffer) {
-            const {
-                nombre,
-                email,
-                celular,
-                recomendadoPor
-            } = datos;
-            const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
+       async function enviarCorreoConPDF(datos, pdfBuffer) {
+    const { nombre, email, celular, recomendadoPor } = datos;
 
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: 'teamtoriiapp@gmail.com',
-                    pass: 'smup asae jtrk izni',
-                },
-            });
+    const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
 
-            const mailOptions = {
-                from: '"<teamtoriiapp@Axia.com>',
-                to: 'dz677806@gmail.com',
-                subject: `Nuevo formulario de ${nombre}`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-                        <h2 style="color: #004aad;">📄 Nuevo Formulario Recibido</h2>
-                        <p><strong>Nombre:</strong> ${nombre}</p>
-                        <p><strong>Email:</strong> ${email}</p>
-                        <p><strong>Celular:</strong> ${celular}</p>
-                        <p><strong>Recomendado por:</strong> ${recomendadoPor}</p>
-                        <p>Se adjunta el formulario en formato PDF.</p>
-                    </div>
-                `,
-                attachments: [{
-                    filename: `MiniPlan${nombreLimpio}.pdf`,
-                    content: pdfBuffer,
-                    contentType: 'application/pdf',
-                }],
-            };
+    console.log("Datos recibidos:");
+    console.log(`Nombre: ${nombre}, Email: ${email}, Celular: ${celular}, Recomendado por: ${recomendadoPor}`);
+    
+    console.log("Verificando PDF Buffer...");
+    console.log("Es buffer válido: ", Buffer.isBuffer(pdfBuffer));
+    
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+            user: 'teamtoriiapp@gmail.com',
+            pass: 'smup asae jtrk izni',
+        },
+       rejectUnauthorized: false 
+    });
 
-            try {
-                await transporter.sendMail(mailOptions);
-                console.log(`✅ Correo enviado correctamente para ${nombre}`);
-            } catch (error) {
-                console.error(`❌ Error al enviar el correo:`, error);
-            }
-        }
+    const mailOptions = {
+        from: '"Team Torii 👤" <teamtoriiapp@gmail.com>',
+        to: 'Daniel94cruz@gmail.com',  
+        subject: `Nuevo formulario de ${nombre}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <h2 style="color: #004aad;">📄 Nuevo Formulario Recibido</h2>
+                <p><strong>Nombre:</strong> ${nombre}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Celular:</strong> ${celular}</p>
+                <p><strong>Recomendado por:</strong> ${recomendadoPor}</p>
+                <p>Se adjunta el formulario en formato PDF.</p>
+            </div>
+        `,
+        attachments: [{
+            filename: `MiniPlan_${nombreLimpio}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+        }],
+    };
+
+    try {
+        console.log("Enviando correo...");
+        const info = await transporter.sendMail(mailOptions);
+        
+        console.log("Correo enviado con éxito:");
+        console.log(`Mensaje ID: ${info.messageId}`);
+        console.log(`Información adicional: ${JSON.stringify(info, null, 2)}`);
+    } catch (error) {
+        console.error("❌ Error al enviar el correo:");
+        console.error(error.response || error.message || error);
+        throw error;
+    }
+}
+
 
         const fondoPath = path.join(__dirname, 'assets', 'Axia_PPT.png');
         if (fs.existsSync(fondoPath)) {
@@ -946,7 +960,7 @@ const procesarMiniPlan = async (req, res) => {
             .fontSize(13)
             .text(
                 `Es importante provisionar tus gastos anuales para evitar
-endeudamientos a corto plazo y verte forzado a salir
+endeudamientos a corto plazo y vernos forzados a salir
 de activos productivos por falta de liquidez en el
 transcurso del año.`,
                 ingresosBaseX - 100,
@@ -1269,7 +1283,7 @@ transcurso del año.`,
 
         const riesgos = [{
                 nombre: 'Riesgo vejez',
-                color: datosPlan.planB && datosPlan.planB !== null ? 'red' : 'red',
+                color: datosPlan.planB && datosPlan.planB !== null ? 'yellow' : 'red',
                 comentario: datosPlan.planB && datosPlan.planB !== null ?
                     'Es clave validar si el monto que estás ahorrando para tu pensión realmente te permitirá mantener tu estilo de vida al retirarte. Un buen plan de retiro necesita una base financiera sólida.' : 'No tener un plan B para tu pensión puede poner en riesgo tu bienestar futuro. Comienza a construir desde hoy un ahorro complementario que te permita retirarte con tranquilidad.'
             },
@@ -1280,7 +1294,7 @@ transcurso del año.`,
                     'yellow' : 'green',
                 comentario: datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'Sí' ?
                     'No contar con un seguro de vida teniendo hijos puede poner en riesgo la estabilidad financiera de tu familia en caso de una eventualidad para mantener la calidad de vida de tus seres queridos si tú llegas a faltar. Considera incluirlo dentro de tu planeación financiera cuanto antes.' : datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'No' ?
-                    'Aunque no tengas dependientes o personas a cargo, los seguros de vida pueden ser una herramienta estratégica. Actualmente existen opciones que no solo brindan protección, sino que también te ayudan a optimizar impuestos y planificar tu pensión. Evalúa cómo un seguro puede formar parte de tu estrategia financiera a largo plazo.' : 'Tienes un seguro de vida, lo cual es una excelente base para proteger a tus seres queridos.Revisa esta cobertura con detalle.'
+                    'Aunque no tengas dependientes o personas a cargo, los seguros de vida pueden ser una herramienta estratégica. Actualmente existen opciones que no solo brindan protección, sino que también te ayudan a optimizar impuestos y planificar tu pensión. Evalúa cómo un seguro puede formar parte de tu estrategia financiera a largo plazo.' : 'Tienes un seguro de vida, lo cual es una excelente base para proteger a tus seres queridos.'
             },
             {
                 nombre: 'Riesgo de incapacidad',
