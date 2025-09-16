@@ -140,9 +140,8 @@ const procesarMiniPlan = async (req, res) => {
 
 
 
-async function enviarCorreoConPDF(datos, pdfBuffer) {
+function enviarCorreoConPDF(datos, pdfBuffer) {
     const { nombre, email, celular, recomendadoPor } = datos;
-
     const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
 
     console.log("🔹 Datos del formulario:");
@@ -158,7 +157,6 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
     }
 
     console.log(`🔹 PDF válido detectado (${pdfBuffer.length} bytes)`);
-
     console.log("🔹 Configurando conexión SMTP...");
 
     const transporter = nodemailer.createTransport({
@@ -167,9 +165,9 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
         secure: false,
         auth: {
             user: 'teamtoriiapp@gmail.com',
-            pass: 'smup asae jtrk izni', 
+            pass: 'smup asae jtrk izni',
         },
-        connectionTimeout: 8000, 
+        connectionTimeout: 8000,
         greetingTimeout: 5000,
         socketTimeout: 10000,
     });
@@ -197,20 +195,22 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
         ],
     };
 
-    try {
-        console.log("🚀 Enviando correo...");
+    console.log("🚀 Enviando correo...");
 
-        const info = await transporter.sendMail(mailOptions);
+    transporter.sendMail(mailOptions)
+        .then(info => {
+            console.log("✅ Correo enviado con éxito:");
+            console.log(`📨 ID de mensaje: ${info.messageId}`);
+            console.log(`📬 Respuesta del servidor: ${info.response}`);
+        })
+        .catch(error => {
+            console.error("❌ Error al enviar el correo:");
+            console.error(error.stack || error.message || error);
+        });
 
-        console.log("✅ Correo enviado con éxito:");
-        console.log(`📨 ID de mensaje: ${info.messageId}`);
-        console.log(`📬 Respuesta del servidor: ${info.response}`);
-    } catch (error) {
-        console.error("❌ Error al enviar el correo:");
-        console.error(error.stack || error.message || error);
-        throw new Error("No se pudo enviar el correo: " + (error.message || error));
-    }
+    // La función termina aquí, sin esperar a que el correo se envíe.
 }
+
 
 
 
