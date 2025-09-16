@@ -137,17 +137,25 @@ const procesarMiniPlan = async (req, res) => {
             res.send(pdfData);
         });
 
-       async function enviarCorreoConPDF(datos, pdfBuffer) {
+
+async function enviarCorreoConPDF(datos, pdfBuffer) {
     const { nombre, email, celular, recomendadoPor } = datos;
 
     const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
 
-    console.log("Datos recibidos:");
+    console.log("🔹 Datos recibidos:");
     console.log(`Nombre: ${nombre}, Email: ${email}, Celular: ${celular}, Recomendado por: ${recomendadoPor}`);
-    
-    console.log("Verificando PDF Buffer...");
-    console.log("Es buffer válido: ", Buffer.isBuffer(pdfBuffer));
-    
+
+    console.log("🔹 Verificando PDF Buffer...");
+    console.log("¿Es buffer válido? ", Buffer.isBuffer(pdfBuffer));
+    console.log("Tamaño del PDF Buffer:", pdfBuffer.length, "bytes");
+
+    if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
+        throw new Error("❌ El buffer del PDF no es válido o está vacío.");
+    }
+
+    // Crear el transporter
+    console.log("🔹 Configurando transporter...");
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
@@ -156,12 +164,16 @@ const procesarMiniPlan = async (req, res) => {
             user: 'teamtoriiapp@gmail.com',
             pass: 'smup asae jtrk izni',
         },
-       rejectUnauthorized: false 
+        tls: {
+            rejectUnauthorized: false // ⚠️ Solo en desarrollo
+        },
+        connectionTimeout: 15000, // 15 segundos de timeout
     });
 
+    // Opciones del correo
     const mailOptions = {
         from: '"Team Torii 👤" <teamtoriiapp@gmail.com>',
-        to: 'dz677806@gmail.com',  
+        to: 'dz677806@gmail.com', // Cambia si quieres testear con otro correo
         subject: `Nuevo formulario de ${nombre}`,
         html: `
             <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
@@ -181,18 +193,25 @@ const procesarMiniPlan = async (req, res) => {
     };
 
     try {
-        console.log("Enviando correo...");
-        const info = await transporter.sendMail(mailOptions);
-        
-        console.log("Correo enviado con éxito:");
-        console.log(`Mensaje ID: ${info.messageId}`);
-        console.log(`Información adicional: ${JSON.stringify(info, null, 2)}`);
+        console.log("🚀 Enviando correo...");
+
+        const info = await Promise.race([
+            transporter.sendMail(mailOptions),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("⏱ Timeout al intentar enviar el correo.")), 15000)
+            )
+        ]);
+
+        console.log("✅ Correo enviado con éxito:");
+        console.log(`📨 ID de mensaje: ${info.messageId}`);
+        console.log(`📬 Respuesta: ${info.response}`);
     } catch (error) {
         console.error("❌ Error al enviar el correo:");
-        console.error(error.response || error.message || error);
+        console.error(error.stack || error.message || error);
         throw error;
     }
 }
+
 
 
         const fondoPath = path.join(__dirname, 'assets', 'Axia_PPT.png');
