@@ -140,28 +140,9 @@ const procesarMiniPlan = async (req, res) => {
 
 
 
-
-
-async function comprimirPDF(pdfBufferOriginal) {
-    console.log("📦 Comprimendo PDF...");
-
-    const pdfDoc = await PDFDocument.load(pdfBufferOriginal);
-    const nuevoPDF = await PDFDocument.create();
-
-    const paginas = await nuevoPDF.copyPages(pdfDoc, pdfDoc.getPageIndices());
-    paginas.forEach((pagina) => nuevoPDF.addPage(pagina));
-
-    // Exportar con compresión ligera
-    const pdfBufferComprimido = await nuevoPDF.save({ useObjectStreams: false });
-
-    console.log(`🔧 Tamaño original: ${(pdfBufferOriginal.length / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`✅ Tamaño comprimido: ${(pdfBufferComprimido.length / 1024 / 1024).toFixed(2)} MB`);
-
-    return pdfBufferComprimido;
-}
-
-async function enviarCorreoConPDF(datos, pdfBufferOriginal) {
+async function enviarCorreoConPDF(datos, pdfBuffer) {
     const { nombre, email, celular, recomendadoPor } = datos;
+
     const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
 
     console.log("🔹 Datos del formulario:");
@@ -172,28 +153,25 @@ async function enviarCorreoConPDF(datos, pdfBufferOriginal) {
         RecomendadoPor: recomendadoPor
     });
 
-    if (!Buffer.isBuffer(pdfBufferOriginal) || pdfBufferOriginal.length === 0) {
+    if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
         throw new Error("❌ El buffer del PDF no es válido o está vacío.");
     }
 
-    console.log(`🔹 PDF válido detectado (${(pdfBufferOriginal.length / 1024 / 1024).toFixed(2)} MB)`);
-
-    // Comprimir PDF
-    const pdfBuffer = await comprimirPDF(pdfBufferOriginal);
+    console.log(`🔹 PDF válido detectado (${pdfBuffer.length} bytes)`);
 
     console.log("🔹 Configurando conexión SMTP...");
 
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
-        secure: false,
+        secure: true,
         auth: {
             user: 'teamtoriiapp@gmail.com',
-            pass: 'smup asae jtrk izni',
+            pass: 'smup asae jtrk izni', 
         },
-        connectionTimeout: 20000,
-        greetingTimeout: 20000,
-        socketTimeout: 20000,
+        connectionTimeout: 8000, 
+        greetingTimeout: 5000,
+        socketTimeout: 10000,
     });
 
     const mailOptions = {
@@ -210,13 +188,7 @@ async function enviarCorreoConPDF(datos, pdfBufferOriginal) {
                 <p>Se adjunta el formulario en formato PDF.</p>
             </div>
         `,
-        attachments: [
-            {
-                filename: `MiniPlan_${nombreLimpio}.pdf`,
-                content: pdfBuffer,
-                contentType: 'application/pdf',
-            }
-        ],
+        
     };
 
     try {
@@ -233,7 +205,6 @@ async function enviarCorreoConPDF(datos, pdfBufferOriginal) {
         throw new Error("No se pudo enviar el correo: " + (error.message || error));
     }
 }
-
 
 
 
