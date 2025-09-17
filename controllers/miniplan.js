@@ -103,6 +103,7 @@ const procesarMiniPlan = async (req, res) => {
             (datosPlan.comidaOficina || 0) +
             (datosPlan.entretenimiento || 0) +
             (datosPlan.segurosMensuales || 0) +
+            (datosPlan.ahorroMensual || 0) +
             (datosPlan.cursos || 0) +
             (datosPlan.hijos || 0) +
             (datosPlan.otrosGastosMensuales || 0);
