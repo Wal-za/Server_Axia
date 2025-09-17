@@ -183,23 +183,26 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
                 <p>Se adjunta el formulario en formato PDF.</p>
             </div>
         `,
-        /*
+        
         attachments: [{
             filename: `MiniPlan_${nombreLimpio}.pdf`,
             content: pdfBuffer,
-            contentType: 'application/pdf',
-        }],*/
+            contentType: 'application/pdf', 
+        }],
     };
 
     try {
         console.log("🚀 Enviando correo...");
+        
+        console.time('Tiempo de envío');  // Empieza a contar el tiempo
 
-        const info = await Promise.race([
-            transporter.sendMail(mailOptions),
-            new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("⏱ Timeout al intentar enviar el correo.")), 15000)
-            )
-        ]);
+        const info = await transporter.sendMail(mailOptions);  // Asegúrate de esperar la respuesta de enviar el correo
+        
+        console.timeEnd('Tiempo de envío');  // Finaliza el conteo de tiempo y muestra en milisegundos
+        
+        // Mostrar el tiempo en segundos
+        const tiempoEnSegundos = (performance.now() - performance.timeStamp) / 1000;
+        console.log(`⏳ El tiempo de envío fue: ${tiempoEnSegundos.toFixed(2)} segundos`);
 
         console.log("✅ Correo enviado con éxito:");
         console.log(`📨 ID de mensaje: ${info.messageId}`);
@@ -417,10 +420,13 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
                 label: 'Protecciones Personales',
                 value: datosPlan.segurosMensuales
             },
-
             {
                 label: 'Educación o gastos hijos',
                 value: datosPlan.hijos
+            },
+             {
+                label: 'Ahorro',
+                value: datosPlan.ahorroMensual
             },
             {
                 label: 'Servicio a la deuda',
@@ -633,7 +639,8 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
             '#8b572a',
             '#9b9b9b',
             '#7ed321',
-            '#f8e71c'
+            '#f8e71c',
+            '#f749d1',
         ];
 
 
