@@ -7,7 +7,6 @@ const ClienteAxiasSchema = new Schema({
   fecha: { type: Date, default: Date.now, required: true },
   sexo: { type: String, required: true },
   nombre: { type: String, required: true },
-  correoElectronico: { type: String, required: true },
   apellidos: { type: String, required: true },
   cedula: { type: String, required: true, unique: true },  
   fechaNacimiento: { type: Date, required: true },
