@@ -1309,7 +1309,7 @@ transcurso del año.`,
 
         const riesgos = [{
                 nombre: 'Riesgo vejez',
-                color: datosPlan.planB && datosPlan.planB !== null ? 'yellow' : 'red',
+                color: datosPlan.planB && datosPlan.planB !== null ? 'red' : 'red',
                 comentario: datosPlan.planB && datosPlan.planB !== null ?
                     'Es clave validar si el monto que estás ahorrando para tu pensión realmente te permitirá mantener tu estilo de vida al retirarte. Un buen plan de retiro necesita una base financiera sólida.' : 'No tener un plan B para tu pensión puede poner en riesgo tu bienestar futuro. Comienza a construir desde hoy un ahorro complementario que te permita retirarte con tranquilidad.'
             },
@@ -1320,7 +1320,7 @@ transcurso del año.`,
                     'yellow' : 'green',
                 comentario: datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'Sí' ?
                     'No contar con un seguro de vida teniendo hijos puede poner en riesgo la estabilidad financiera de tu familia en caso de una eventualidad para mantener la calidad de vida de tus seres queridos si tú llegas a faltar. Considera incluirlo dentro de tu planeación financiera cuanto antes.' : datosPlan.seguroVida === 'No' && datosPlan.tieneHijosDependientes === 'No' ?
-                    'Aunque no tengas dependientes o personas a cargo, los seguros de vida pueden ser una herramienta estratégica. Actualmente existen opciones que no solo brindan protección, sino que también te ayudan a optimizar impuestos y planificar tu pensión. Evalúa cómo un seguro puede formar parte de tu estrategia financiera a largo plazo.' : 'Tienes un seguro de vida, lo cual es una excelente base para proteger a tus seres queridos.'
+                    'Aunque no tengas dependientes o personas a cargo, los seguros de vida pueden ser una herramienta estratégica. Actualmente existen opciones que no solo brindan protección, sino que también te ayudan a optimizar impuestos y planificar tu pensión. Evalúa cómo un seguro puede formar parte de tu estrategia financiera a largo plazo.' : 'Tienes un seguro de vida, lo cual es una excelente base para proteger a tus seres queridos.Revisa esta cobertura con detalle.'
             },
             {
                 nombre: 'Riesgo de incapacidad',
