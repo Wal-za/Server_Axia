@@ -142,14 +142,7 @@ const procesarMiniPlan = async (req, res) => {
 async function enviarCorreoConPDF(datos, pdfBuffer) {
     const { nombre, email, celular, recomendadoPor } = datos;
 
-    const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
-
-    console.log("🔹 Datos recibidos:");
-    console.log(`Nombre: ${nombre}, Email: ${email}, Celular: ${celular}, Recomendado por: ${recomendadoPor}`);
-
-    console.log("🔹 Verificando PDF Buffer...");
-    console.log("¿Es buffer válido? ", Buffer.isBuffer(pdfBuffer));
-    console.log("Tamaño del PDF Buffer:", pdfBuffer.length, "bytes");
+    const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');    
 
     if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
         throw new Error("❌ El buffer del PDF no es válido o está vacío.");
@@ -193,21 +186,13 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
     };
 
     try {
-        console.log("🚀 Enviando correo...");
-        
-        console.time('Tiempo de envío');  // Empieza a contar el tiempo
 
-        const info = await transporter.sendMail(mailOptions);  // Asegúrate de esperar la respuesta de enviar el correo
-        
-        console.timeEnd('Tiempo de envío');  // Finaliza el conteo de tiempo y muestra en milisegundos
+        const info = await transporter.sendMail(mailOptions);       
         
         // Mostrar el tiempo en segundos
         const tiempoEnSegundos = (performance.now() - performance.timeStamp) / 1000;
-        console.log(`⏳ El tiempo de envío fue: ${tiempoEnSegundos.toFixed(2)} segundos`);
-
         console.log("✅ Correo enviado con éxito:");
-        console.log(`📨 ID de mensaje: ${info.messageId}`);
-        console.log(`📬 Respuesta: ${info.response}`);
+        
     } catch (error) {
         console.error("❌ Error al enviar el correo:");
         console.error(error.stack || error.message || error);
