@@ -1,4 +1,5 @@
 const PDFDocument = require('pdfkit');
+const { Resend } = require('resend'); // Usamos require
 const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
@@ -6,7 +7,9 @@ const {
     createCanvas,
     registerFont
 } = require('canvas');
-const nodemailer = require('nodemailer');
+
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 const ChartDataLabels = require('chartjs-plugin-datalabels');
@@ -138,69 +141,69 @@ const procesarMiniPlan = async (req, res) => {
             res.send(pdfData);
         });
 
-
-async function enviarCorreoConPDF(datos, pdfBuffer) {
-    const { nombre, email, celular, recomendadoPor } = datos;
-
-    const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');    
-
-    if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
-        throw new Error("❌ El buffer del PDF no es válido o está vacío.");
-    }
-
-    console.log("🔹 Configurando transporter...");
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: 'teamtoriiapp@gmail.com',
-            pass: 'smup asae jtrk izni',
-        },
-        tls: {
-            rejectUnauthorized: false 
-        },
-        connectionTimeout: 15000, 
-    });
-
-    const mailOptions = {
-        from: '"Team Torii 👤" <teamtoriiapp@gmail.com>',
-        to: 'daniel94cruz@gmail.com', 
-        subject: `Nuevo formulario de ${nombre}`,
-        html: `
-            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-                <h2 style="color: #004aad;">📄 Nuevo Formulario Recibido</h2>
-                <p><strong>Nombre:</strong> ${nombre}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Celular:</strong> ${celular}</p>
-                <p><strong>Recomendado por:</strong> ${recomendadoPor}</p>
-                <p>Se adjunta el formulario en formato PDF.</p>
-            </div>
-        `,
+        async function enviarCorreoConPDF(datos, pdfBuffer) {
+            const { nombre, email, celular, recomendadoPor } = datos;
         
-        attachments: [{
-            filename: `MiniPlan_${nombreLimpio}.pdf`,
-            content: pdfBuffer,
-            contentType: 'application/pdf', 
-        }],
-    };
-
-    try {
-
-        const info = await transporter.sendMail(mailOptions);       
+            // Asegúrate de que nombreLimpio esté definido, como lo tenías antes
+            const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
         
-        // Mostrar el tiempo en segundos
-        const tiempoEnSegundos = (performance.now() - performance.timeStamp) / 1000;
-        console.log("✅ Correo enviado con éxito:");
+            console.log("🔹 Datos recibidos:");
+            console.log(`Nombre: ${nombre}, Email: ${email}, Celular: ${celular}, Recomendado por: ${recomendadoPor}`);
         
-    } catch (error) {
-        console.error("❌ Error al enviar el correo:");
-        console.error(error.stack || error.message || error);
-        throw error;
-    }
-}
+            console.log("🔹 Verificando PDF Buffer...");
+            console.log("¿Es buffer válido? ", Buffer.isBuffer(pdfBuffer));
+            console.log("Tamaño del PDF Buffer:", pdfBuffer.length, "bytes");
+        
+            if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
+                throw new Error("❌ El buffer del PDF no es válido o está vacío.");
+            }
+        
+            // Aquí ya no necesitamos nodemailer.createTransport
+            // const transporter = nodemailer.createTransport({...});
+        
+            try {
+                console.log("🚀 Enviando correo con Resend...");
+        
+                // Aquí es donde cambia la lógica de envío
+                const { data, error } = await resend.emails.send({
+                    from: 'Axia Finanzas <onboarding@resend.dev>', // <- ¡IMPORTANTE! Reemplaza con tu dominio verificado en Resend
+                    to: ['valiente_cucharas4y@icloud.com'], // Puedes cambiar esto para usar datos.email si quieres enviarlo al usuario
+                    subject: `Nuevo formulario de ${nombre}`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                            <h2 style="color: #004aad;">📄 Nuevo Formulario Recibido</h2>
+                            <p><strong>Nombre:</strong> ${nombre}</p>
+                            <p><strong>Email:</strong> ${email}</p>
+                            <p><strong>Celular:</strong> ${celular}</p>
+                            <p><strong>Recomendado por:</strong> ${recomendadoPor}</p>
+                            <p>Se adjunta el formulario en formato PDF.</p>
+                        </div>
+                    `,
+                    attachments: [{
+                        filename: `MiniPlan_${nombreLimpio}.pdf`,
+                        content: pdfBuffer.toString('base64'), // Resend espera el contenido del adjunto en Base64
+                        contentType: 'application/pdf',
+                    }],
+                });
+        
+                if (error) {
+                    console.error("❌ Error al enviar el correo con Resend:", error);
+                    throw error; // Propagar el error para que Vercel lo detecte
+                }
+        
+                console.log("✅ Correo enviado con éxito por Resend:");
+                console.log(`📨 ID de mensaje: ${data.id}`); // Resend devuelve un ID diferente
+                console.log("📬 Data de respuesta:", data);
+        
+            } catch (error) {
+                console.error("❌ Error general al enviar el correo con Resend:");
+                console.error(error.stack || error.message || error);
+                throw error; // Re-lanza el error para que la función de Vercel lo capture
+            }
+        }
+        
 
-
+        
 
         const fondoPath = path.join(__dirname, 'assets', 'Axia_PPT.png');
         if (fs.existsSync(fondoPath)) {
