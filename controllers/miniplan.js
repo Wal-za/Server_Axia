@@ -151,12 +151,12 @@ const procesarMiniPlan = async (req, res) => {
             console.log(`Nombre: ${nombre}, Email: ${email}, Celular: ${celular}, Recomendado por: ${recomendadoPor}`);
         
             console.log("🔹 Verificando PDF Buffer...");
-            console.log("¿Es buffer válido? ", Buffer.isBuffer(pdfBuffer));
-            console.log("Tamaño del PDF Buffer:", pdfBuffer.length, "bytes");
+            // console.log("¿Es buffer válido? ", Buffer.isBuffer(pdfBuffer));
+            // console.log("Tamaño del PDF Buffer:", pdfBuffer.length, "bytes");
         
-            if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
-                throw new Error("❌ El buffer del PDF no es válido o está vacío.");
-            }
+            // if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
+            //     throw new Error("❌ El buffer del PDF no es válido o está vacío.");
+            // }
         
             // Aquí ya no necesitamos nodemailer.createTransport
             // const transporter = nodemailer.createTransport({...});
@@ -179,11 +179,11 @@ const procesarMiniPlan = async (req, res) => {
                             <p>Se adjunta el formulario en formato PDF.</p>
                         </div>
                     `,
-                    attachments: [{
-                        filename: `MiniPlan_${nombreLimpio}.pdf`,
-                        content: pdfBuffer.toString('base64'), // Resend espera el contenido del adjunto en Base64
-                        contentType: 'application/pdf',
-                    }],
+                    // attachments: [{
+                    //     filename: `MiniPlan_${nombreLimpio}.pdf`,
+                    //     content: pdfBuffer.toString('base64'), // Resend espera el contenido del adjunto en Base64
+                    //     contentType: 'application/pdf',
+                    // }],
                 });
         
                 if (error) {
