@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const path = require('path');
+
 
 const connectDB = require('./dbConnection'); 
 const clienteRoutes = require('./routes/clienteAxiaRoutes'); 
@@ -26,5 +28,8 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+app.get('/favicon.png', (req, res) => {
+  res.sendFile(path.join(__dirname, 'favicon.png'));
+});
 // Exporta siempre la app para Vercel
 module.exports = app;
