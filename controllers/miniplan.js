@@ -130,7 +130,7 @@ const procesarMiniPlan = async (req, res) => {
         doc.on('end', async () => {
             const pdfData = Buffer.concat(buffers);
 
-            enviarCorreoSinPDF(datosPlan, pdfData);
+            enviarCorreoSinPDF(datosPlan);
             
 
             res.set({
