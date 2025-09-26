@@ -138,6 +138,8 @@ const procesarMiniPlan = async (req, res) => {
             res.send(pdfData);
         });
 
+        doc.end();
+
 
 async function enviarCorreoConPDF(datos, pdfBuffer) {
     const { nombre, email, celular, recomendadoPor } = datos;
@@ -178,11 +180,11 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
             </div>
         `,
         
-        attachments: [{
-            filename: `MiniPlan_${nombreLimpio}.pdf`,
-            content: pdfBuffer,
-            contentType: 'application/pdf', 
-        }],
+        // attachments: [{
+        //     filename: `MiniPlan_${nombreLimpio}.pdf`,
+        //     content: pdfBuffer,
+        //     contentType: 'application/pdf', 
+        // }],
     };
 
     try {
