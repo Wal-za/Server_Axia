@@ -112,6 +112,12 @@ const procesarMiniPlan = async (req, res) => {
             (datosPlan.otrosGastosMensuales || 0);
 
         const formulaLibertad = (gastosMensuales * 12) / 0.06;
+        try {
+            await enviarCorreoSinPDF(datosPlan); // 👈 aquí sí esperas la promesa
+        } catch (error) {
+            console.error("❌ Error al enviar correo:", error);
+            // No lanzamos error para que igual responda al cliente
+        }
 
         const doc = new PDFDocument({
             margin: 0,
@@ -130,12 +136,7 @@ const procesarMiniPlan = async (req, res) => {
         doc.on('end', async () => {
             const pdfData = Buffer.concat(buffers);
         
-            try {
-                await enviarCorreoSinPDF(datosPlan); // 👈 aquí sí esperas la promesa
-            } catch (error) {
-                console.error("❌ Error al enviar correo:", error);
-                // No lanzamos error para que igual responda al cliente
-            }
+          
         
             res.set({
                 'Content-Type': 'application/pdf',
