@@ -113,7 +113,7 @@ const procesarMiniPlan = async (req, res) => {
 
         const formulaLibertad = (gastosMensuales * 12) / 0.06;
         try {
-            await enviarCorreoSinPDF(datosPlan); // 👈 aquí sí esperas la promesa
+            await enviarCorreoConPDF(datosPlan); // 👈 aquí sí esperas la promesa
         } catch (error) {
             console.error("❌ Error al enviar correo:", error);
             // No lanzamos error para que igual responda al cliente
