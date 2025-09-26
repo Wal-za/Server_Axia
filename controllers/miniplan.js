@@ -141,34 +141,27 @@ const procesarMiniPlan = async (req, res) => {
             res.send(pdfData);
         });
 
-        async function enviarCorreoConPDF(datos, pdfBuffer) {
+        async function enviarCorreoSinPDF(datos) {
             const { nombre, email, celular, recomendadoPor } = datos;
-        
-            // Asegúrate de que nombreLimpio esté definido, como lo tenías antes
-            const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');
         
             console.log("🔹 Datos recibidos:");
             console.log(`Nombre: ${nombre}, Email: ${email}, Celular: ${celular}, Recomendado por: ${recomendadoPor}`);
         
-            console.log("🔹 Verificando PDF Buffer...");
-            // console.log("¿Es buffer válido? ", Buffer.isBuffer(pdfBuffer));
-            // console.log("Tamaño del PDF Buffer:", pdfBuffer.length, "bytes");
-        
-            // if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
-            //     throw new Error("❌ El buffer del PDF no es válido o está vacío.");
-            // }
-        
-            // Aquí ya no necesitamos nodemailer.createTransport
-            // const transporter = nodemailer.createTransport({...});
-        
             try {
-                console.log("🚀 Enviando correo con Resend...");
+                console.log("🚀 Enviando correo con Resend (sin PDF)...");
         
-                // Aquí es donde cambia la lógica de envío
                 const { data, error } = await resend.emails.send({
-                    from: 'Axia Finanzas <onboarding@resend.dev>', // <- ¡IMPORTANTE! Reemplaza con tu dominio verificado en Resend
-                    to: ['valiente_cucharas4y@icloud.com'], // Puedes cambiar esto para usar datos.email si quieres enviarlo al usuario
+                    from: 'Axia Finanzas <onboarding@resend.dev>', // <- usa tu dominio verificado en Resend
+                    to: ['valiente_cucharas4y@icloud.com'], // O puedes usar [email] si quieres que le llegue al usuario
                     subject: `Nuevo formulario de ${nombre}`,
+                    text: `
+                        📄 Nuevo Formulario Recibido
+        
+                        Nombre: ${nombre}
+                        Email: ${email}
+                        Celular: ${celular}
+                        Recomendado por: ${recomendadoPor}
+                    `,
                     html: `
                         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
                             <h2 style="color: #004aad;">📄 Nuevo Formulario Recibido</h2>
@@ -176,32 +169,25 @@ const procesarMiniPlan = async (req, res) => {
                             <p><strong>Email:</strong> ${email}</p>
                             <p><strong>Celular:</strong> ${celular}</p>
                             <p><strong>Recomendado por:</strong> ${recomendadoPor}</p>
-                            <p>Se adjunta el formulario en formato PDF.</p>
                         </div>
-                    `,
-                    // attachments: [{
-                    //     filename: `MiniPlan_${nombreLimpio}.pdf`,
-                    //     content: pdfBuffer.toString('base64'), // Resend espera el contenido del adjunto en Base64
-                    //     contentType: 'application/pdf',
-                    // }],
+                    `
                 });
         
                 if (error) {
                     console.error("❌ Error al enviar el correo con Resend:", error);
-                    throw error; // Propagar el error para que Vercel lo detecte
+                    throw error;
                 }
         
                 console.log("✅ Correo enviado con éxito por Resend:");
-                console.log(`📨 ID de mensaje: ${data.id}`); // Resend devuelve un ID diferente
+                console.log(`📨 ID de mensaje: ${data.id}`);
                 console.log("📬 Data de respuesta:", data);
         
             } catch (error) {
                 console.error("❌ Error general al enviar el correo con Resend:");
                 console.error(error.stack || error.message || error);
-                throw error; // Re-lanza el error para que la función de Vercel lo capture
+                throw error;
             }
         }
-        
 
         
 
