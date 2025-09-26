@@ -2,34 +2,29 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-// Importar la función de conexión a la base de datos
 const connectDB = require('./dbConnection'); 
-
-// Importar las rutas
 const clienteRoutes = require('./routes/clienteAxiaRoutes'); 
+
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Conectar a la base de datos usando la función importada
-connectDB(); 
+connectDB();
 
-// Rutas
-app.use('/api', clienteRoutes); 
+app.use('/api', clienteRoutes);
 
-// Ruta de prueba
 app.get('/', (req, res) => {
   res.send('Servidor funcionando');
 });
 
-const port = process.env.PORT || 3001;
+if (process.env.NODE_ENV !== 'production') {
+  // Solo escucha en local
+  const port = process.env.PORT || 3001;
+  app.listen(port, () => {
+    console.log(`Servidor corriendo en el puerto ${port}`);
+  });
+}
 
-//Comentar en producción
-//process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
-
-app.listen(port, () => {
-  console.log(`Servidor corriendo en el puerto ${port}`);
-});
+// Exporta siempre la app para Vercel
+module.exports = app;
