@@ -145,6 +145,8 @@ const procesarMiniPlan = async (req, res) => {
             res.send(pdfData);
         });
 
+        doc.end();
+        
         async function enviarCorreoSinPDF(datos) {
             const { nombre, email, celular, recomendadoPor } = datos;
         
