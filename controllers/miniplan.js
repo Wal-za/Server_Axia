@@ -1,8 +1,9 @@
 const PDFDocument = require('pdfkit');
-const { Resend } = require('resend'); // Usamos require
+
 const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
+const nodemailer = require('nodemailer');
 const {
     createCanvas,
     registerFont
