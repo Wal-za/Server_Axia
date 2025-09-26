@@ -4,7 +4,6 @@ const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
 const nodemailer = require('nodemailer');
-const Resend = require('resend');
 
 const {
     createCanvas,
@@ -12,7 +11,6 @@ const {
 } = require('canvas');
 
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 const ChartDataLabels = require('chartjs-plugin-datalabels');
