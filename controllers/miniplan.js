@@ -1,4 +1,5 @@
 const PDFDocument = require('pdfkit');
+const { Resend } = require('resend'); // Usamos require
 const fs = require('fs');
 const echarts = require('echarts');
 const path = require('path');
@@ -6,7 +7,9 @@ const {
     createCanvas,
     registerFont
 } = require('canvas');
-const nodemailer = require('nodemailer');
+
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 const ChartDataLabels = require('chartjs-plugin-datalabels');
@@ -109,6 +112,12 @@ const procesarMiniPlan = async (req, res) => {
             (datosPlan.otrosGastosMensuales || 0);
 
         const formulaLibertad = (gastosMensuales * 12) / 0.06;
+        try {
+            await enviarCorreoSinPDF(datosPlan); // 👈 aquí sí esperas la promesa
+        } catch (error) {
+            console.error("❌ Error al enviar correo:", error);
+            // No lanzamos error para que igual responda al cliente
+        }
 
         const doc = new PDFDocument({
             margin: 0,
@@ -126,10 +135,9 @@ const procesarMiniPlan = async (req, res) => {
         doc.on('data', buffers.push.bind(buffers));
         doc.on('end', async () => {
             const pdfData = Buffer.concat(buffers);
-
-             enviarCorreoConPDF(datosPlan, pdfData);
-            
-
+        
+          
+        
             res.set({
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': 'inline; filename="pagina1.pdf"',
@@ -202,7 +210,7 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
     }
 }
 
-
+        
 
         const fondoPath = path.join(__dirname, 'assets', 'Axia_PPT.png');
         if (fs.existsSync(fondoPath)) {
