@@ -129,10 +129,14 @@ const procesarMiniPlan = async (req, res) => {
         doc.on('data', buffers.push.bind(buffers));
         doc.on('end', async () => {
             const pdfData = Buffer.concat(buffers);
-
-            enviarCorreoSinPDF(datosPlan);
-            
-
+        
+            try {
+                await enviarCorreoSinPDF(datosPlan); // 👈 aquí sí esperas la promesa
+            } catch (error) {
+                console.error("❌ Error al enviar correo:", error);
+                // No lanzamos error para que igual responda al cliente
+            }
+        
             res.set({
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': 'inline; filename="pagina1.pdf"',
