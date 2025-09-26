@@ -395,7 +395,7 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
         const ingresoNeto = datosPlan.ingresoNetoMensual || 0;
 
 
-
+//comentario 
 
         const gastos = [{
                 label: 'Transporte',
