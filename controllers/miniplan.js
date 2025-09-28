@@ -147,7 +147,7 @@ const procesarMiniPlan = async (req, res) => {
             res.send(pdfData);
         });
 
-        doc.end();
+        // doc.end();
 
 
 async function enviarCorreoConPDF(datos, pdfBuffer) {
@@ -155,9 +155,9 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
 
     const nombreLimpio = nombre.replace(/[^a-zA-Z0-9-_]/g, '_');    
 
-    if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
-        throw new Error("❌ El buffer del PDF no es válido o está vacío.");
-    }
+    // if (!Buffer.isBuffer(pdfBuffer) || pdfBuffer.length === 0) {
+    //     throw new Error("❌ El buffer del PDF no es válido o está vacío.");
+    // }
 
     console.log("🔹 Configurando transporter...");
     const transporter = nodemailer.createTransport({
