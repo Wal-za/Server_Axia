@@ -13,8 +13,8 @@ async function enviarCorreoConPDF(datos, pdfBuffer) {
         port: 465,
         secure: true,
         auth: {
-            user: 'teamtoriiapp@gmail.com',
-            pass: 'smup asae jtrk izni',
+            user: 'axiaminiplan@gmail.com',
+            pass: 'jpwe hdrz gqbm zyeq',
         },
         tls: {
             rejectUnauthorized: false,
