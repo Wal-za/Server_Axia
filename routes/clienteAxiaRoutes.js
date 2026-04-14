@@ -19,7 +19,7 @@ const upload = multer({ storage: storage });
 
 // Ruta para crear un nuevo cliente
 router.post('/clientes', crearCliente);
-router.get('/clientes', getAllClientes);
+// router.get('/clientes', getAllClientes);
 
 // Ruta para obtener los datos de un cliente por su ID
 router.get('/clientes/:cedula', obtenerCliente);
@@ -37,7 +37,7 @@ router.get('/cliente/:cedula/fieldset', obtenerFieldset);
 router.post('/miniplan', procesarMiniPlan);
 
 //Ruta Mini Plan Financiero Descargar datos
-router.get('/ClienteAxias', exportarClientes);
+// router.get('/ClienteAxias', exportarClientes);
 
 // Ruta para enviar el correo con el PDF adjunto
 router.post('/Email', upload.single('pdf'), async (req, res) => {
