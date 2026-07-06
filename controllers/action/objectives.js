@@ -13,9 +13,9 @@ const obtenerObjetivos = async (req, res) => {
     }
 };
 
-const implementarObjetivo = async (req, res) => {
+const markAsImplmented = async (req, res) => {
     try {
-        const objetivo = objetivosService.implementarObjetivo(req.params.id);
+        const objetivo = objetivosService.markAstrue(req.params.id);
 
         if (!objetivo) {
             return res.status(404).json({
@@ -38,5 +38,5 @@ const implementarObjetivo = async (req, res) => {
 
 module.exports = {
     obtenerObjetivos,
-    implementarObjetivo
+    markAsImplmented
 };

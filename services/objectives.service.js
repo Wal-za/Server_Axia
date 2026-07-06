@@ -20,10 +20,10 @@ const objetivos = [
     }
 ];
 
-const obtenerObjetivos = () => objetivos;
+const obtenerObjetivos = () => objetivos.filter((obj) => !obj.implementado);
 
 // Marca un objetivo como implementado; devuelve null si no existe
-const implementarObjetivo = (id) => {
+const markAstrue = (id) => {
     const objetivo = objetivos.find((obj) => obj.id === Number(id));
 
     if (!objetivo) return null;
@@ -34,5 +34,5 @@ const implementarObjetivo = (id) => {
 
 module.exports = {
     obtenerObjetivos,
-    implementarObjetivo
+    markAstrue
 };
