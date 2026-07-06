@@ -5,7 +5,8 @@ const path = require('path');
 
 
 const connectDB = require('./dbConnection'); 
-const clienteRoutes = require('./routes/clienteAxiaRoutes'); 
+const clienteRoutes = require('./routes/clienteAxiaRoutes');
+const actionRoutes = require('./routes/actionRoutes');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 connectDB();
 
 app.use('/api', clienteRoutes);
+app.use('/api/action', actionRoutes);
 
 app.get('/', (req, res) => {
   res.send('Servidor funcionando');
