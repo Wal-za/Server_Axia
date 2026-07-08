@@ -48,12 +48,13 @@ describe('obtenerObjetivos (unitarias)', () => {
                 expect.objectContaining({
                     objetivo: expect.any(String),
                     descripcion: expect.any(String),
-                    plazoAnios: expect.any(Number),
-                    valorObjetivo: expect.any(Number),
                     valorMensualAhorrar: expect.any(Number),
                     implementado: expect.any(Boolean)
                 })
             );
+            // En el Excel pueden venir como número o como texto (ej. "Analizar")
+            expect(['string', 'number']).toContain(typeof obj.plazoAnios);
+            expect(['string', 'number']).toContain(typeof obj.valorObjetivo);
         });
     });
 });
