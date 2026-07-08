@@ -2,8 +2,7 @@ const { getHoja } = require('./excel');
 
 const NOMBRE_HOJA = 'Info Objetivos';
 
-// Cache en memoria: los cambios (como marcar implementado)
-// viven en memoria mientras no hay base de datos
+
 let objetivos = null;
 
 const cargarObjetivos = () => {
@@ -11,7 +10,7 @@ const cargarObjetivos = () => {
 
     const filas = getHoja(NOMBRE_HOJA);
 
-    // Los encabezados no están en la primera fila: se busca la fila que contiene "PRIORIDAD"
+
     const indiceEncabezados = filas.findIndex((fila) => fila.includes('PRIORIDAD'));
 
     if (indiceEncabezados === -1) {
@@ -33,7 +32,6 @@ const cargarObjetivos = () => {
                 prioridad,
                 objetivo,
                 descripcion,
-                // Pueden venir como número o como texto (ej. "Analizar"), se conservan tal cual
                 plazoAnios,
                 valorObjetivo,
                 valorMensualAhorrar: Number(valorMensualAhorrar) || 0,
@@ -47,7 +45,6 @@ const cargarObjetivos = () => {
 
 const obtenerObjetivos = () => cargarObjetivos().filter((obj) => !obj.implementado);
 
-// Marca un objetivo como implementado; devuelve null si no existe
 const markAstrue = (id) => {
     const objetivo = cargarObjetivos().find((obj) => obj.id === Number(id));
 
