@@ -5,6 +5,8 @@ const process = require('../../services/proccess');
 const currentBudget = async (req, res) => {
     try {
       const budget = await budgetService.getCurrentBudget();
+      const isRequiredAnualProvision = await process.isRequiredAnualProvision();
+     
       res.status(200).json(budget);
     } catch (error) {
         console.error('❌ Error al obtener el presupuesto actual:', error);
