@@ -1,11 +1,18 @@
 const budgetService = require('../../services/budget.service');
 const initialVariables = require('../../services/initialvariables');
 const process = require('../../services/proccess');
+const  {getActivosLiquidos,getActivosProductivos,getActivosImproductivos}  = require('../../services/patrimonio.service');
+
 
 const currentBudget = async (req, res) => {
     try {
       const budget = await budgetService.getCurrentBudget();
       const isRequiredAnualProvision = await process.isRequiredAnualProvision();
+     const moneyAvailable=await getActivosLiquidos()
+     const productiveAssets=await getActivosProductivos()
+     const improductiveAssets=await getActivosImproductivos()
+     
+     
      
       res.status(200).json(budget);
     } catch (error) {
