@@ -49,8 +49,20 @@ const getActivosProductivos = () => leerBloqueActivos('ACTIVOS PRODUCTIVOS');
 
 const getActivosImproductivos = () => leerBloqueActivos('ACTIVOS IMPRODUCTIVOS');
 
+const eliminarActivoById = (activos, id) => {
+    const index = activos.findIndex((activo) => activo.id === id);
+
+    if (index === -1) {
+        throw new Error(`No se encontró el activo con id "${id}"`);
+    }
+
+    const activoEliminado = activos.splice(index, 1)[0];
+    return activoEliminado;
+};
+
 module.exports = {
     getActivosLiquidos,
     getActivosProductivos,
-    getActivosImproductivos
+    getActivosImproductivos,
+    eliminarActivoById
 };

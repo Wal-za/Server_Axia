@@ -4,9 +4,10 @@ require('dotenv').config();
 const path = require('path');
 
 
-const connectDB = require('./dbConnection'); 
+const connectDB = require('./dbConnection');
 const clienteRoutes = require('./routes/clienteAxiaRoutes');
 const actionRoutes = require('./routes/actionRoutes');
+const patrimonioRoutes = require('./routes/patrimonioRoutes');
 
 const app = express();
 
@@ -17,6 +18,7 @@ connectDB();
 
 app.use('/api', clienteRoutes);
 app.use('/api/action', actionRoutes);
+app.use('/api/patrimonio', patrimonioRoutes);
 
 app.get('/', (req, res) => {
   res.send('Servidor funcionando');
