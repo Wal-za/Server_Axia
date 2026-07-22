@@ -22,6 +22,7 @@ const leerBloqueActivos = (titulo) => {
     }
 
     const activos = [];
+    let id = 1;
 
     for (let i = indiceTitulo + 2; i < filas.length; i++) {
         const [, activo, entidad, valor, comentario] = filas[i];
@@ -29,11 +30,13 @@ const leerBloqueActivos = (titulo) => {
         if (activo === null || String(activo).trim() === '') break;
 
         activos.push({
+            id,
             activo: String(activo).trim(),
             entidad,
             valor: Number(valor) || 0,
             comentario
         });
+        id++;
     }
 
     bloques[titulo] = activos;
